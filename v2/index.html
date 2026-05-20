@@ -2307,7 +2307,13 @@ async function enviarPedido(){
     detalle: carrito.map(l => {
       const o = opcionesTexto(l.opciones);
       return `${l.nombre} (${l.porciones}p) x${l.qty}${o ? ' [' + o + ']' : ''}`;
-    }).join(' | ')
+    }).join(' | '),
+    items: carrito.map(l => ({
+      nombre: l.nombre,
+      porciones: l.porciones,
+      qty: l.qty,
+      opciones: opcionesTexto(l.opciones) || ''
+    }))
   };
   const numero = await obtenerNumeroPedido(payload);
   const url = waPedidoLink(numero);

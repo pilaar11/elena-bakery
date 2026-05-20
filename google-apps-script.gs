@@ -1,47 +1,49 @@
 /**
- * Elena Bakery — Registro de pedidos + número correlativo + producción
+ * Elena Bakery — Pedidos, número correlativo y planificación de producción
  * ------------------------------------------------------------
- * INSTALACIÓN (la primera vez):
- * 1. En tu Google Sheet: Extensiones > Apps Script. Borra todo y pega ESTO.
- * 2. Guarda (💾).
- * 3. Arriba selecciona la función "configurar" y pulsa "Ejecutar" una vez.
- *    Autoriza los permisos. Esto crea el menú de estados, los colores y la
- *    pestaña "Producción".
- * 4. Implementar > Nueva implementación > Aplicación web
- *      - Ejecutar como: Yo
- *      - Quién tiene acceso: Cualquier persona
- *    Copia la URL /exec y pégala en index.html (PEDIDOS_ENDPOINT).
+ * INSTALACIÓN / ACTUALIZACIÓN:
+ * 1. En tu Google Sheet: Extensiones > Apps Script. Borra todo y pega ESTO. Guarda (💾).
+ * 2. Arriba elige la función "configurar" y pulsa ▶ Ejecutar (autoriza permisos).
+ *    Crea/ordena las pestañas: Pedidos, Items, Producción y Resumen.
+ * 3. Implementar > Gestionar implementaciones > ✏️ editar >
+ *    Versión: "Nueva versión" > Implementar.   (El URL /exec NO cambia.)
  *
- * SI YA LO TENÍAS Y SOLO ESTÁS ACTUALIZANDO:
- * - Pega este código, Guarda, ejecuta "configurar" una vez.
- * - Vuelve a desplegar: Implementar > Gestionar implementaciones >
- *   ✏️ (editar) > Versión: "Nueva versión" > Implementar.  (El URL NO cambia.)
+ * CÓMO FUNCIONA:
+ * - "Pedidos": una fila por pedido. Aquí controlas el ESTADO.
+ *      Cuando te paguen el 50%, cambia el Estado a "Abonado".
+ * - "Items": una fila por producto (se llena solo). Es el motor de los cálculos.
+ * - "Producción": detalle por ítem de los pedidos ABONADOS (pedidos grandes
+ *      quedan ordenados, cada producto en su línea).
+ * - "Resumen": CUÁNTO HORNEAR por día y producto (suma cantidades de todos los
+ *      pedidos abonados de un mismo día) → para optimizar el bizcocho.
+ * - Pedidos no abonados quedan en "Solicitado" y no afectan producción.
  *
- * FLUJO DE TRABAJO:
- * - Cada pedido entra como "Solicitado" (un interesado).
- * - Cuando confirmes el abono del 50%, cambia su Estado a "Abonado".
- * - La pestaña "Producción" muestra SOLO los abonados, ordenados por fecha
- *   de entrega. Eso es lo único que debes hornear.
- * - Los que nunca abonan quedan en "Solicitado" y no afectan producción;
- *   bórralos cuando quieras (clic en el nº de fila > clic derecho > Eliminar).
+ * NOTA: los pedidos hechos ANTES de esta actualización no tienen desglose en
+ * "Items", así que no aparecerán en Producción/Resumen. Los nuevos sí.
  */
 
 const SHEET_PEDIDOS    = 'Pedidos';
-const SHEET_PRODUCCION = 'Producción';
+const SHEET_ITEMS      = 'Items';
+const SHEET_PRODUCCION = 'Producción';   // detalle por ítem (solo abonados)
+const SHEET_RESUMEN    = 'Resumen';      // cuánto hornear por día/producto
 const NUMERO_INICIAL   = 1;
 const ESTADOS = ['Solicitado', 'Abonado', 'Entregado', 'Anulado'];
-const HEADER  = ['N° Pedido', 'Fecha/hora', 'Teléfono', 'Fecha de entrega',
-                 'Entrega (orden)', 'Total', 'Abono 50%', 'Detalle', 'Estado'];
+
+const HEADER_PEDIDOS = ['N° Pedido', 'Fecha/hora', 'Teléfono', 'Fecha de entrega',
+                        'Entrega (orden)', 'Total', 'Abono 50%', 'Detalle', 'Estado'];
+const HEADER_ITEMS   = ['Entrega (orden)', 'Fecha de entrega', 'N° Pedido', 'Producto',
+                        'Porciones', 'Cantidad', 'Opciones', 'Estado'];
 
 function doPost(e){
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
     const data = JSON.parse(e.postData.contents);
-    const sh = obtenerHojaPedidos_();
+    const sh = obtenerHoja_(SHEET_PEDIDOS, HEADER_PEDIDOS);
     const props = PropertiesService.getScriptProperties();
     const numero = parseInt(props.getProperty('ultimoNumero') || String(NUMERO_INICIAL - 1), 10) + 1;
     props.setProperty('ultimoNumero', String(numero));
+
     sh.appendRow([
       numero,
       new Date(),
@@ -53,6 +55,23 @@ function doPost(e){
       data.detalle || '',
       'Solicitado'
     ]);
+
+    const items = obtenerHoja_(SHEET_ITEMS, HEADER_ITEMS);
+    (data.items || []).forEach(function(it){
+      items.appendRow([
+        data.fechaEntregaISO || '',
+        data.fechaEntrega || '',
+        numero,
+        it.nombre || '',
+        it.porciones || '',
+        it.qty || '',
+        it.opciones || ''
+      ]);
+      const r = items.getLastRow();
+      items.getRange(r, 8).setFormula(
+        '=IFERROR(VLOOKUP(C' + r + ', ' + SHEET_PEDIDOS + '!$A:$I, 9, FALSE),"")');
+    });
+
     return json({ ok: true, numero: numero });
   } catch(err){
     return json({ ok: false, error: String(err) });
@@ -67,10 +86,10 @@ function doGet(){
 
 /** Ejecútala UNA VEZ desde el editor para dejar todo listo. */
 function configurar(){
-  const sh = obtenerHojaPedidos_();
-  const colEstado = HEADER.indexOf('Estado') + 1;
+  const sh = obtenerHoja_(SHEET_PEDIDOS, HEADER_PEDIDOS);
+  obtenerHoja_(SHEET_ITEMS, HEADER_ITEMS);
 
-  // Menú desplegable de estados
+  const colEstado = HEADER_PEDIDOS.indexOf('Estado') + 1;
   const regla = SpreadsheetApp.newDataValidation()
     .requireValueInList(ESTADOS, true)
     .setAllowInvalid(false)
@@ -79,17 +98,18 @@ function configurar(){
 
   pintarEstados_(sh, colEstado);
   crearProduccion_();
+  crearResumen_();
   SpreadsheetApp.getActiveSpreadsheet()
-    .toast('Listo: estados, colores y pestaña "Producción" configurados.');
+    .toast('Listo: Pedidos, Items, Producción y Resumen configurados.');
 }
 
-function obtenerHojaPedidos_(){
+function obtenerHoja_(nombre, header){
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sh = ss.getSheetByName(SHEET_PEDIDOS);
-  if(!sh) sh = ss.insertSheet(SHEET_PEDIDOS);
-  const head = sh.getRange(1, 1, 1, HEADER.length).getValues()[0];
-  if(head.join('') !== HEADER.join('')){
-    sh.getRange(1, 1, 1, HEADER.length).setValues([HEADER]).setFontWeight('bold');
+  let sh = ss.getSheetByName(nombre);
+  if(!sh) sh = ss.insertSheet(nombre);
+  const head = sh.getRange(1, 1, 1, header.length).getValues()[0];
+  if(head.join('') !== header.join('')){
+    sh.getRange(1, 1, 1, header.length).setValues([header]).setFontWeight('bold');
     sh.setFrozenRows(1);
   }
   return sh;
@@ -97,7 +117,7 @@ function obtenerHojaPedidos_(){
 
 function pintarEstados_(sh, colEstado){
   const letra = columnaLetra_(colEstado);
-  const rango = sh.getRange(2, 1, 2000, HEADER.length);
+  const rango = sh.getRange(2, 1, 2000, HEADER_PEDIDOS.length);
   const colores = [['Abonado', '#d9ead3'], ['Entregado', '#cfe2f3'],
                    ['Anulado', '#efefef'], ['Solicitado', '#fff2cc']];
   const reglas = colores.map(function(c){
@@ -112,15 +132,28 @@ function pintarEstados_(sh, colEstado){
 
 function crearProduccion_(){
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let p = ss.getSheetByName(SHEET_PRODUCCION);
-  if(!p) p = ss.insertSheet(SHEET_PRODUCCION);
+  const p = ss.getSheetByName(SHEET_PRODUCCION) || ss.insertSheet(SHEET_PRODUCCION);
   p.clear();
   p.getRange('A1')
-    .setValue('PEDIDOS A PRODUCIR (solo abonados) — se actualiza solo')
+    .setValue('PEDIDOS A PRODUCIR (solo abonados) — detalle por ítem, se actualiza solo')
     .setFontWeight('bold');
   p.getRange('A3').setFormula(
-    '=QUERY(' + SHEET_PEDIDOS + '!A:I, "select A, D, H, F, G, C ' +
-    'where I = \'Abonado\' order by E", 1)');
+    '=QUERY(' + SHEET_ITEMS + '!A:H, "select B, C, D, E, F, G ' +
+    'where H = \'Abonado\' order by A, C", 1)');
+  p.setFrozenRows(3);
+}
+
+function crearResumen_(){
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const p = ss.getSheetByName(SHEET_RESUMEN) || ss.insertSheet(SHEET_RESUMEN);
+  p.clear();
+  p.getRange('A1')
+    .setValue('CUÁNTO HORNEAR (solo abonados) — por día y producto, se actualiza solo')
+    .setFontWeight('bold');
+  p.getRange('A3').setFormula(
+    '=QUERY(' + SHEET_ITEMS + '!A:H, "select A, D, E, sum(F) ' +
+    'where H = \'Abonado\' group by A, D, E order by A ' +
+    'label A \'Entrega\', D \'Producto\', E \'Porciones\', sum(F) \'Cantidad total\'", 1)');
   p.setFrozenRows(3);
 }
 
