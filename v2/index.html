@@ -1092,13 +1092,17 @@
   .cart-total{ font-family: var(--display-serif); font-size: 1.7rem; font-weight: 700; color: var(--verde-profundo); }
   .cart-send{
     display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+    width: 100%; border: none; cursor: pointer; font-family: var(--body-font);
     background: var(--success); color: #fff; text-decoration: none;
     padding: 0.95rem; border-radius: var(--radius-pill);
     font-weight: 600; font-size: 0.98rem; letter-spacing: 0.02em;
     transition: all .25s ease; box-shadow: 0 8px 20px rgba(37,211,102,0.3);
   }
   .cart-send:hover{ transform: translateY(-2px); box-shadow: 0 12px 26px rgba(37,211,102,0.4); }
-  .cart-send.disabled{ background: var(--verde-suave); box-shadow: none; pointer-events: none; opacity: 0.6; }
+  .cart-send.disabled, .cart-send:disabled{ background: var(--verde-suave); box-shadow: none; pointer-events: none; opacity: 0.6; }
+  .cart-send.cargando{ pointer-events: none; opacity: 0.8; }
+  .co-field{ margin-bottom: 1.1rem; }
+  .co-error{ color: #b5483b; font-size: 0.76rem; margin-top: 0.4rem; }
   .cart-clear{
     width: 100%; margin-top: 0.7rem; background: none; border: none;
     color: var(--texto-suave); font-size: 0.82rem; cursor: pointer; text-decoration: underline;
@@ -1559,6 +1563,11 @@
   <div class="cart-body">
     <div id="cartItems"></div>
     <div class="cart-checkout" id="cartCheckout" hidden>
+      <div class="co-field">
+        <label class="co-label" for="cliTel">📱 Tu número de celular</label>
+        <input class="cfg-input" id="cliTel" type="tel" inputmode="numeric" placeholder="9 1234 5678" autocomplete="tel" maxlength="15">
+        <p class="co-error" id="cliTelError" hidden>Ingresa un celular válido (9 dígitos, parte con 9).</p>
+      </div>
       <div class="co-label">📅 Fecha de entrega</div>
       <div class="co-selected" id="coSelected">Elige una fecha disponible para tu pedido</div>
       <div class="cal">
@@ -1586,10 +1595,10 @@
       <span id="cartAbono">$0</span>
     </div>
     <p class="cart-aviso" id="cartFechaAviso" hidden>Elige una fecha de entrega para enviar tu pedido.</p>
-    <a class="cart-send" id="cartSend" target="_blank" rel="noopener">
+    <button class="cart-send" id="cartSend" type="button">
       <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"></path></svg>
-      Enviar pedido por WhatsApp
-    </a>
+      <span id="cartSendLabel">Enviar pedido por WhatsApp</span>
+    </button>
     <button class="cart-clear" id="cartClear">Vaciar carrito</button>
     <p class="cart-note">Tu pedido se agenda al recibir el <strong>50% de abono</strong>; el saldo se paga contra entrega. Coordinamos el pago por WhatsApp.</p>
   </div>
@@ -1774,6 +1783,10 @@ const PEDIDO_CONFIG = {
   diasCerrados: [0],     // días de la semana cerrados (0=domingo … 6=sábado)
 };
 const ABONO_PCT = 0.5;   // 50% de abono para confirmar el pedido
+
+// Número de pedido correlativo + registro en planilla (Google Apps Script).
+// Pega aquí la URL /exec de tu Web App (vacío = usa un código por fecha/hora).
+const PEDIDOS_ENDPOINT = '';
 
 // ----- Categorías -----
 const CATEGORIAS = [
@@ -2234,7 +2247,77 @@ function restaurarFecha(){
   } catch(e){}
 }
 
-function waPedidoLink(){
+// ----- Teléfono del cliente -----
+function limpiarTel(v){
+  let s = (v || '').replace(/\D/g, '');
+  if(s.startsWith('56')) s = s.slice(2);
+  return s;
+}
+function telValido(v){ return /^9\d{8}$/.test(limpiarTel(v)); }
+function telActual(){ const el = document.getElementById('cliTel'); return el ? el.value : ''; }
+function telDisplay(){
+  const s = limpiarTel(telActual());
+  return s.length === 9 ? `+56 ${s}` : telActual().trim();
+}
+function guardarTel(){ try { localStorage.setItem('elena_tel', telActual()); } catch(e){} }
+function restaurarTel(){
+  try {
+    const v = localStorage.getItem('elena_tel');
+    const el = document.getElementById('cliTel');
+    if(v && el) el.value = v;
+  } catch(e){}
+}
+
+// ----- Número de pedido (correlativo en planilla, con respaldo por fecha/hora) -----
+function codigoFechaHora(){
+  const d = new Date();
+  return `EB-${String(d.getFullYear()).slice(2)}${pad2(d.getMonth()+1)}${pad2(d.getDate())}-${pad2(d.getHours())}${pad2(d.getMinutes())}`;
+}
+async function obtenerNumeroPedido(payload){
+  if(!PEDIDOS_ENDPOINT) return codigoFechaHora();
+  try {
+    const res = await fetch(PEDIDOS_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+      redirect: 'follow'
+    });
+    const j = await res.json();
+    if(j && j.ok && j.numero != null) return String(j.numero);
+  } catch(e){ /* respaldo abajo */ }
+  return codigoFechaHora();
+}
+
+async function enviarPedido(){
+  if(carrito.length === 0 || !fechaSel || !telValido(telActual())) return;
+  const send = document.getElementById('cartSend');
+  const label = document.getElementById('cartSendLabel');
+  const win = window.open('', '_blank'); // se abre en el gesto del clic para evitar bloqueos
+  send.classList.add('cargando');
+  const txtOrig = label.textContent;
+  label.textContent = 'Generando tu pedido…';
+
+  const total = totalPrecio();
+  const payload = {
+    telefono: '+56' + limpiarTel(telActual()),
+    fechaEntrega: prettyFecha(fechaSel),
+    total: total,
+    abono: Math.round(total * ABONO_PCT),
+    detalle: carrito.map(l => {
+      const o = opcionesTexto(l.opciones);
+      return `${l.nombre} (${l.porciones}p) x${l.qty}${o ? ' [' + o + ']' : ''}`;
+    }).join(' | ')
+  };
+  const numero = await obtenerNumeroPedido(payload);
+  const url = waPedidoLink(numero);
+  if(win) win.location.href = url;
+  else window.location.href = url;
+
+  send.classList.remove('cargando');
+  label.textContent = txtOrig;
+}
+
+function waPedidoLink(numero){
   const lineas = carrito.map(l => {
     let s = `• ${l.nombre} (${l.porciones}p) x${l.qty} — ${precioFmt(l.precio*l.qty)}`;
     const opt = opcionesTexto(l.opciones);
@@ -2243,8 +2326,10 @@ function waPedidoLink(){
   });
   const total = totalPrecio();
   const abono = Math.round(total * ABONO_PCT);
+  const enc = numero ? `*Pedido N° ${numero}*\n\n` : '';
   const fecha = fechaSel ? `\nFecha de entrega solicitada: ${prettyFecha(fechaSel)}` : '';
-  const msg = `Hola Elena Bakery! Quiero hacer este pedido:\n\n${lineas.join('\n')}\n\nTotal estimado: ${precioFmt(total)}\nAbono para confirmar (50%): ${precioFmt(abono)}${fecha}\n\n¿Cómo coordino el abono? Gracias!`;
+  const tel = `\nMi celular de contacto: ${telDisplay()}`;
+  const msg = `Hola Elena Bakery! Quiero hacer este pedido:\n\n${enc}${lineas.join('\n')}${tel}\n\nTotal estimado: ${precioFmt(total)}\nAbono para confirmar (50%): ${precioFmt(abono)}${fecha}\n\n¿Cómo coordino el abono? Gracias!`;
   return `https://wa.me/${TEL}?text=${encodeURIComponent(msg)}`;
 }
 
@@ -2268,7 +2353,7 @@ function renderCart(){
     abonoRow.hidden = true;
     aviso.hidden = true;
     send.classList.add('disabled');
-    send.removeAttribute('href');
+    send.disabled = true;
   } else {
     items.innerHTML = carrito.map((l, i) => {
       const opt = opcionesTexto(l.opciones);
@@ -2294,14 +2379,18 @@ function renderCart(){
     checkout.hidden = false;
     abonoRow.hidden = false;
     document.getElementById('cartAbono').textContent = precioFmt(Math.round(total * ABONO_PCT));
-    if(fechaSel){
+    let motivo = '';
+    if(!fechaSel) motivo = 'Elige una fecha de entrega para enviar tu pedido.';
+    else if(!telValido(telActual())) motivo = 'Ingresa tu número de celular para enviar tu pedido.';
+    if(motivo){
+      aviso.hidden = false;
+      aviso.textContent = motivo;
+      send.classList.add('disabled');
+      send.disabled = true;
+    } else {
       aviso.hidden = true;
       send.classList.remove('disabled');
-      send.href = waPedidoLink();
-    } else {
-      aviso.hidden = false;
-      send.classList.add('disabled');
-      send.removeAttribute('href');
+      send.disabled = false;
     }
   }
   document.getElementById('cartTotal').textContent = precioFmt(total);
@@ -2373,6 +2462,14 @@ function bindCart(){
     actualizarFechaUI();
     renderCart();
   });
+  const tel = document.getElementById('cliTel');
+  tel.addEventListener('input', () => {
+    guardarTel();
+    const err = document.getElementById('cliTelError');
+    err.hidden = !(tel.value.trim() !== '' && !telValido(tel.value));
+    renderCart();
+  });
+  document.getElementById('cartSend').addEventListener('click', enviarPedido);
   document.addEventListener('keydown', e => { if(e.key === 'Escape'){ closeCart(); closeConfigurador(); } });
 }
 
@@ -2417,6 +2514,7 @@ bindAgregar();
 bindCart();
 bindConfigurador();
 restaurarFecha();
+restaurarTel();
 actualizarFechaUI();
 renderCalendario();
 renderCart();
