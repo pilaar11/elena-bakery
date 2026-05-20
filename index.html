@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Elena Bakery — Pastelería y Repostería Artesanal</title>
+<meta name="description" content="Tortas, cheesecakes, pies y antojitos dulces hechos a mano en Chile. Encarga tu torta por WhatsApp." />
+
+
+<!-- Fuentes -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Caveat:wght@500;600;700&family=Outfit:wght@300;400;500;600&family=Caprasimo&family=Sansita+Swashed:wght@500;700&family=Bagel+Fat+One&family=Mochiy+Pop+One&family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  /* ===== Fuentes locales (assets/fonts) ===== */
+  @font-face{font-family:'Messy Ben';      src:url('assets/fonts/MessyBen.ttf') format('truetype');       font-display:swap}
+  @font-face{font-family:'Miniday';        src:url('assets/fonts/Miniday.otf') format('opentype');       font-display:swap}
+  @font-face{font-family:'My Handwriting'; src:url('assets/fonts/MyHandwriting.ttf') format('truetype'); font-display:swap}
+  @font-face{font-family:'Oliver';         src:url('assets/fonts/Oliver-Regular.ttf') format('truetype'); font-display:swap}
+  @font-face{font-family:'Poppin';         src:url('assets/fonts/Poppin-Regular.ttf') format('truetype'); font-display:swap}
+  @font-face{font-family:'Quaint HF';      src:url('assets/fonts/QuaintHF.ttf') format('truetype');      font-display:swap}
+  @font-face{font-family:'QuoteNote';      src:url('assets/fonts/QuoteNote.otf') format('opentype');     font-display:swap}
+  @font-face{font-family:'Sam Handwriting';src:url('assets/fonts/SamHandwriting.ttf') format('truetype');font-display:swap}
+  @font-face{font-family:'Simple';         src:url('assets/fonts/Simple-Regular.ttf') format('truetype'); font-display:swap}
+  @font-face{font-family:'The Greats';     src:url('assets/fonts/TheGreats.otf') format('opentype');     font-display:swap}
+  @font-face{font-family:'TingTong';       src:url('assets/fonts/TingTong.ttf') format('truetype');      font-display:swap}
+</style>
+
+<style>
+  :root{
+    --verde-profundo: #2d3a1f;
+    --verde-oscuro: #3d4f29;
+    --verde-medio: #6b8348;
+    --verde-claro: #8aa063;
+    --verde-suave: #a8b884;
+    --crema: #f5f1e3;
+    --crema-claro: #faf6e8;
+    --crema-oscuro: #ebe4cd;
+    --blanco-roto: #fdfbf4;
+    --acento: #c4a87a;       /* dorado suave */
+    --texto: #2d3a1f;
+    --texto-suave: #5a6b3f;
+
+    /* tweakeables */
+    --hero-font: 'Caprasimo', serif;
+    --hero-overlay: 0.35;
+    --anim-speed: 1;
+    --accent-warm: var(--acento);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:'Outfit',sans-serif;
+    background:var(--crema);
+    color:var(--texto);
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+
+  .display-serif{font-family:'Cormorant Garamond',serif;font-weight:500;letter-spacing:-0.02em}
+  .display-hand{font-family:'Caveat',cursive;font-weight:600}
+
+  /* ============================================
+     NAVEGACIÓN
+     ============================================ */
+  nav{
+    position:fixed;
+    top:0;left:0;right:0;
+    z-index:100;
+    padding:1rem 2rem;
+    background:rgba(245,241,227,0);
+    backdrop-filter:blur(0px);
+    -webkit-backdrop-filter:blur(0px);
+    border-bottom:1px solid rgba(45,58,31,0);
+    transition:background .35s ease, backdrop-filter .35s ease, border-color .35s ease, padding .35s ease;
+  }
+  nav.scrolled{
+    background:rgba(245,241,227,0.88);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid rgba(45,58,31,0.08);
+    padding:.7rem 2rem;
+  }
+  .nav-inner{
+    max-width:1400px;margin:0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .nav-logo{
+    display:flex;align-items:center;gap:.65rem;
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.35rem;font-weight:600;
+    color:var(--crema);
+    letter-spacing:0.02em;
+    text-decoration:none;
+    transition:color .35s ease, opacity .35s ease;
+    opacity:0;
+  }
+  nav.scrolled .nav-logo{color:var(--verde-profundo);opacity:1}
+  .nav-logo img{width:38px;height:38px;border-radius:50%;object-fit:cover;background:var(--crema);padding:2px}
+  .nav-links{display:flex;gap:2rem;list-style:none}
+  .nav-links a{
+    color:var(--crema);
+    text-decoration:none;
+    font-size:0.92rem;
+    font-weight:400;
+    letter-spacing:0.04em;
+    position:relative;
+    transition:color 0.3s;
+    text-shadow:0 1px 8px rgba(0,0,0,.4);
+  }
+  nav.scrolled .nav-links a{color:var(--verde-oscuro);text-shadow:none}
+  .nav-links a::after{
+    content:'';position:absolute;bottom:-4px;left:0;
+    width:0;height:1px;background:currentColor;
+    transition:width 0.3s ease;
+  }
+  .nav-links a:hover::after{width:100%}
+  .nav-cta{
+    background:var(--crema);
+    color:var(--verde-profundo);
+    padding:0.55rem 1.3rem;
+    border-radius:30px;
+    font-size:0.85rem;
+    font-weight:500;
+    text-decoration:none;
+    transition:all 0.3s;
+    letter-spacing:0.03em;
+    box-shadow:0 4px 14px rgba(0,0,0,.18);
+  }
+  nav.scrolled .nav-cta{background:var(--verde-profundo);color:var(--crema);box-shadow:none}
+  .nav-cta:hover{transform:translateY(-1px)}
+  .menu-toggle{display:none;background:none;border:none;color:var(--crema);cursor:pointer;font-size:1.5rem}
+  nav.scrolled .menu-toggle{color:var(--verde-profundo)}
+
+  /* ============================================
+     PORTADA / HERO
+     ============================================ */
+  .portada{
+    min-height:100vh;
+    position:relative;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+    background:#2d3a1f;
+  }
+  .portada-bg{
+    position:absolute;inset:0;
+    background-image:url('assets/portada-bg.png');
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+    transform:scale(1.05);
+    transition:transform 12s linear;
+  }
+  .portada.loaded .portada-bg{transform:scale(1.12)}
+  .portada-overlay{
+    position:absolute;inset:0;
+    background:
+      radial-gradient(ellipse at center, rgba(45,58,31,calc(var(--hero-overlay) * 0.45)) 0%, rgba(45,58,31,var(--hero-overlay)) 65%, rgba(45,58,31,calc(var(--hero-overlay) + 0.15)) 100%);
+  }
+  .portada-vignette{
+    position:absolute;inset:0;
+    background:linear-gradient(180deg, rgba(0,0,0,.15) 0%, transparent 18%, transparent 78%, rgba(45,58,31,.55) 100%);
+    pointer-events:none;
+  }
+
+  .portada-content{
+    position:relative;z-index:3;
+    text-align:center;
+    padding:2rem;
+    width:100%;
+    max-width:1200px;
+  }
+
+  .portada-eyebrow{
+    font-family:'Caveat',cursive;
+    font-size:clamp(1.1rem, 2vw, 1.5rem);
+    color:var(--crema);
+    letter-spacing:0.18em;
+    text-transform:lowercase;
+    opacity:0;
+    transform:translateY(8px);
+    margin-bottom:0.6rem;
+    text-shadow:0 2px 12px rgba(0,0,0,.5);
+    transition:opacity .8s ease .15s, transform .8s ease .15s;
+  }
+  .portada.loaded .portada-eyebrow{opacity:.95;transform:translateY(0)}
+
+  /* Las letras */
+  .titulo-portada{
+    line-height:0.95;
+    margin:0 auto;
+    color:var(--crema);
+    user-select:none;
+  }
+  .linea-elena{
+    font-family:var(--hero-font);
+    font-size:clamp(4rem, 14vw, 11rem);
+    font-weight:400;
+    letter-spacing:-0.01em;
+    display:flex;justify-content:center;flex-wrap:wrap;gap:0;
+    text-shadow:0 6px 30px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.3);
+  }
+  .linea-bakery{
+    font-family:'Caveat',cursive;
+    font-weight:600;
+    font-size:clamp(3rem, 11vw, 8rem);
+    color:var(--crema);
+    margin-top:-0.4em;
+    display:flex;justify-content:center;flex-wrap:wrap;
+    text-shadow:0 6px 30px rgba(0,0,0,.45);
+  }
+  .linea-bakery .swash{
+    color:var(--acento);
+    font-style:italic;
+  }
+
+  .ltr{
+    display:inline-block;
+    opacity:0;
+    transform:translateY(40px);
+    will-change:transform, opacity, filter;
+  }
+  .ltr.sp{width:0.35em}
+
+  /* Animaciones de letras (controladas por data-anim en .titulo-portada) */
+  /* 1. Cascade (default) — fade up suave, escalonado */
+  .titulo-portada[data-anim="cascade"] .ltr.in{
+    animation: ltrCascade calc(0.8s / var(--anim-speed)) cubic-bezier(.22,.9,.3,1) both;
+  }
+  @keyframes ltrCascade{
+    0%{opacity:0; transform:translateY(40px)}
+    100%{opacity:1; transform:translateY(0)}
+  }
+
+  /* 2. Typewriter — pop instantáneo */
+  .titulo-portada[data-anim="type"] .ltr.in{
+    animation: ltrType calc(0.18s / var(--anim-speed)) steps(1, end) both;
+  }
+  @keyframes ltrType{
+    0%{opacity:0}
+    100%{opacity:1; transform:translateY(0)}
+  }
+
+  /* 3. Hand-drawn — escala desde 0 con leve blur (efecto "trazo") */
+  .titulo-portada[data-anim="draw"] .ltr.in{
+    animation: ltrDraw calc(0.7s / var(--anim-speed)) cubic-bezier(.5,.05,.3,1) both;
+  }
+  @keyframes ltrDraw{
+    0%{opacity:0; transform:translateY(0) scale(0.4) rotate(-6deg); filter:blur(8px)}
+    60%{opacity:.8; filter:blur(0.5px)}
+    100%{opacity:1; transform:translateY(0) scale(1) rotate(0); filter:blur(0)}
+  }
+
+  /* 4. Bounce drop — cae con rebote */
+  .titulo-portada[data-anim="drop"] .ltr.in{
+    animation: ltrDrop calc(0.9s / var(--anim-speed)) cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes ltrDrop{
+    0%{opacity:0; transform:translateY(-180px) rotate(-8deg)}
+    60%{opacity:1; transform:translateY(8px) rotate(2deg)}
+    80%{transform:translateY(-3px) rotate(-1deg)}
+    100%{opacity:1; transform:translateY(0) rotate(0)}
+  }
+
+  /* 5. Sparkle — aparece con brillo dorado */
+  .titulo-portada[data-anim="sparkle"] .ltr.in{
+    animation: ltrSparkle calc(1s / var(--anim-speed)) cubic-bezier(.22,.9,.3,1) both;
+  }
+  @keyframes ltrSparkle{
+    0%{opacity:0; transform:translateY(20px) scale(.9); text-shadow:0 0 0 rgba(196,168,122,0), 0 6px 30px rgba(0,0,0,.45)}
+    40%{opacity:1; transform:translateY(0) scale(1.04);
+        text-shadow:0 0 30px rgba(196,168,122,.9), 0 0 60px rgba(196,168,122,.6), 0 6px 30px rgba(0,0,0,.45)}
+    100%{opacity:1; transform:translateY(0) scale(1);
+         text-shadow:0 0 0 rgba(196,168,122,0), 0 6px 30px rgba(0,0,0,.45)}
+  }
+
+  .portada-sub{
+    margin-top:1.5rem;
+    color:var(--crema);
+    font-size:clamp(.95rem, 1.4vw, 1.15rem);
+    max-width:520px;
+    margin-left:auto;margin-right:auto;
+    opacity:0;
+    transform:translateY(8px);
+    text-shadow:0 2px 12px rgba(0,0,0,.5);
+    transition:opacity .8s ease, transform .8s ease;
+  }
+  .portada.titled .portada-sub{opacity:.9;transform:translateY(0);transition-delay:1.4s}
+
+  .portada-cta{
+    margin-top:2.2rem;
+    display:flex;gap:.9rem;justify-content:center;flex-wrap:wrap;
+    opacity:0;
+    transform:translateY(8px);
+    transition:opacity .8s ease, transform .8s ease;
+  }
+  .portada.titled .portada-cta{opacity:1;transform:translateY(0);transition-delay:1.6s}
+
+  .btn-primary{
+    background:var(--crema);
+    color:var(--verde-profundo);
+    padding:.95rem 2rem;
+    border-radius:40px;
+    text-decoration:none;
+    font-weight:500;font-size:.95rem;letter-spacing:.04em;
+    display:inline-flex;align-items:center;gap:.6rem;
+    transition:transform .3s ease, box-shadow .3s ease, background .3s ease;
+    border:none;cursor:pointer;
+    box-shadow:0 8px 24px rgba(0,0,0,.25);
+  }
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:0 12px 32px rgba(0,0,0,.3); background:#fff}
+
+  .btn-ghost{
+    background:transparent;
+    color:var(--crema);
+    padding:.95rem 2rem;
+    border-radius:40px;
+    text-decoration:none;
+    font-weight:500;font-size:.95rem;letter-spacing:.04em;
+    border:1.5px solid rgba(253,251,244,.7);
+    transition:all .3s;
+    display:inline-flex;align-items:center;gap:.6rem;
+    backdrop-filter:blur(6px);
+  }
+  .btn-ghost:hover{background:rgba(253,251,244,.12); border-color:var(--crema)}
+
+  .scroll-indicator{
+    position:absolute;
+    bottom:1.8rem;left:50%;
+    transform:translateX(-50%);
+    color:var(--crema);
+    opacity:0;
+    font-family:'Caveat',cursive;
+    font-size:1rem;letter-spacing:.1em;
+    display:flex;flex-direction:column;align-items:center;gap:.5rem;
+    transition:opacity .8s ease 2s;
+  }
+  .portada.titled .scroll-indicator{opacity:.75}
+  .scroll-indicator .line{
+    width:1px;height:36px;
+    background:var(--crema);
+    animation:scrollLine 2s ease-in-out infinite;
+    transform-origin:top;
+  }
+  @keyframes scrollLine{
+    0%{transform:scaleY(0); transform-origin:top}
+    50%{transform:scaleY(1); transform-origin:top}
+    51%{transform-origin:bottom}
+    100%{transform:scaleY(0); transform-origin:bottom}
+  }
+
+  /* ============================================
+     SECCIÓN BASE
+     ============================================ */
+  section{position:relative}
+  .seccion-label{
+    font-family:'Caveat',cursive;
+    font-size:1.5rem;
+    color:var(--verde-medio);
+    margin-bottom:.5rem;
+    display:block;
+    letter-spacing:.02em;
+  }
+  .seccion-titulo{
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(2rem, 4vw, 3.2rem);
+    color:var(--verde-profundo);
+    margin-bottom:1.5rem;
+    line-height:1.05;
+    font-weight:500;
+    letter-spacing:-.02em;
+    text-wrap:balance;
+  }
+  .seccion-titulo em{
+    font-family:'Caveat',cursive;
+    font-style:normal;
+    color:var(--verde-medio);
+    font-weight:600;
+  }
+
+  /* ============================================
+     BEST SELLERS
+     ============================================ */
+  .best-sellers{
+    padding:7rem 2rem 5rem;
+    background:linear-gradient(180deg, var(--crema) 0%, var(--crema-claro) 100%);
+  }
+  .bs-header{
+    max-width:1300px;margin:0 auto 3.5rem;
+    display:flex;align-items:flex-end;justify-content:space-between;
+    gap:2rem;flex-wrap:wrap;
+  }
+  .bs-header .seccion-titulo{margin-bottom:0;max-width:600px}
+  .bs-header .bs-sub{
+    color:var(--texto-suave);
+    font-size:1.05rem;
+    max-width:340px;
+    text-align:right;
+  }
+
+  .bs-grid{
+    max-width:1300px;margin:0 auto;
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:1.5rem;
+  }
+  .bs-card{
+    position:relative;
+    background:var(--blanco-roto);
+    border-radius:24px;
+    overflow:hidden;
+    border:1px solid rgba(45,58,31,.06);
+    text-decoration:none;
+    color:inherit;
+    display:flex;flex-direction:column;
+    transition:transform .4s ease, box-shadow .4s ease;
+    opacity:0;
+    transform:translateY(30px);
+  }
+  .bs-card.reveal{opacity:1;transform:translateY(0);transition:transform .8s ease, opacity .8s ease, box-shadow .4s ease}
+  .bs-card:hover{transform:translateY(-8px); box-shadow:0 24px 50px rgba(45,58,31,.15)}
+  .bs-card-img{
+    aspect-ratio:4/5;
+    background:linear-gradient(135deg, var(--verde-claro) 0%, var(--verde-medio) 100%);
+    position:relative;
+    overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .bs-card-img::before{
+    content:'';position:absolute;inset:0;
+    background-image:
+      radial-gradient(circle at 30% 25%, rgba(255,255,255,.28) 0%, transparent 50%),
+      radial-gradient(circle at 70% 75%, rgba(45,58,31,.18) 0%, transparent 50%);
+  }
+  .bs-card-emoji{
+    font-size:7rem;
+    position:relative;z-index:2;
+    filter:drop-shadow(0 6px 14px rgba(0,0,0,.25));
+    transition:transform .6s ease;
+  }
+  .bs-card:hover .bs-card-emoji{transform:scale(1.08) rotate(-3deg)}
+  .bs-rank{
+    position:absolute; top:1rem; left:1rem;
+    font-family:'Caprasimo', serif;
+    font-size:2.2rem;
+    color:var(--crema);
+    line-height:1;
+    text-shadow:0 4px 12px rgba(0,0,0,.35);
+    z-index:3;
+  }
+  .bs-rank::before{
+    content:'';
+    display:inline-block;
+    width:.4em;height:1px;
+    background:var(--crema);
+    vertical-align:middle;
+    margin-right:.3em;
+    margin-bottom:.1em;
+  }
+  .bs-badge{
+    position:absolute;top:1rem;right:1rem;
+    background:var(--acento);
+    color:var(--verde-profundo);
+    padding:.32rem .8rem;
+    border-radius:20px;
+    font-size:.72rem;
+    font-weight:600;
+    z-index:3;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+  }
+  .bs-card-info{
+    padding:1.4rem 1.4rem 1.6rem;
+    display:flex;flex-direction:column;gap:.4rem;
+    flex:1;
+  }
+  .bs-cat{
+    font-family:'Caveat',cursive;
+    font-size:1.05rem;
+    color:var(--verde-medio);
+    line-height:1;
+  }
+  .bs-nombre{
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.45rem;
+    color:var(--verde-profundo);
+    font-weight:500;
+    line-height:1.15;
+  }
+  .bs-desc{
+    font-size:.85rem;
+    color:var(--texto-suave);
+    line-height:1.5;
+    margin-bottom:.2rem;
+  }
+  .bs-footer{
+    margin-top:auto;
+    padding-top:1rem;
+    border-top:1px solid rgba(45,58,31,.08);
+    display:flex;align-items:flex-end;justify-content:space-between;gap:.8rem;
+  }
+  .bs-precio{
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.5rem;
+    color:var(--verde-profundo);
+    font-weight:600;
+    line-height:1;
+  }
+  .bs-porciones{
+    font-size:.75rem;
+    color:var(--texto-suave);
+    margin-top:.25rem;
+  }
+  .bs-pedir{
+    background:var(--verde-profundo);
+    color:var(--crema);
+    border:none;
+    padding:.6rem .95rem;
+    border-radius:25px;
+    font-size:.78rem;
+    font-weight:500;
+    cursor:pointer;
+    transition:all .3s;
+    text-decoration:none;
+    display:inline-flex;align-items:center;gap:.4rem;
+    font-family:'Outfit',sans-serif;
+    letter-spacing:.02em;
+    white-space:nowrap;
+  }
+  .bs-pedir:hover{background:var(--verde-oscuro)}
+
+  /* ============================================
+     CATÁLOGO
+     ============================================ */
+  .catalogo{
+    padding:6rem 2rem 7rem;
+    background:var(--crema-claro);
+  }
+  .catalogo-header{
+    text-align:center;
+    max-width:700px;margin:0 auto 3rem;
+  }
+  .catalogo-header p{
+    color:var(--texto-suave);
+    font-size:1.05rem;
+    margin-top:.8rem;
+  }
+  .filtros{
+    display:flex;justify-content:center;gap:.5rem;flex-wrap:wrap;
+    margin-bottom:3rem;
+  }
+  .filtro-btn{
+    padding:.55rem 1.3rem;
+    border-radius:30px;
+    border:1px solid var(--verde-suave);
+    background:transparent;
+    color:var(--verde-oscuro);
+    font-family:'Outfit',sans-serif;
+    font-size:.88rem;
+    cursor:pointer;
+    transition:all .3s;
+    letter-spacing:.03em;
+  }
+  .filtro-btn:hover{background:var(--verde-suave);color:var(--crema)}
+  .filtro-btn.activo{background:var(--verde-profundo);color:var(--crema);border-color:var(--verde-profundo)}
+
+  .productos-grid{
+    max-width:1300px;margin:0 auto;
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+    gap:1.5rem;
+  }
+  .producto-card{
+    background:var(--blanco-roto);
+    border-radius:20px;
+    overflow:hidden;
+    transition:transform .35s ease, box-shadow .35s ease;
+    position:relative;
+    border:1px solid rgba(45,58,31,.06);
+    display:flex;flex-direction:column;
+  }
+  .producto-card:hover{transform:translateY(-5px); box-shadow:0 20px 40px rgba(45,58,31,.1)}
+  .producto-imagen{
+    aspect-ratio:4/3;
+    background:linear-gradient(135deg, var(--verde-claro) 0%, var(--verde-medio) 100%);
+    position:relative;
+    overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .producto-imagen::before{
+    content:'';position:absolute;inset:0;
+    background-image:
+      radial-gradient(circle at 30% 30%, rgba(255,255,255,.2) 0%, transparent 50%),
+      radial-gradient(circle at 70% 70%, rgba(45,58,31,.1) 0%, transparent 50%);
+  }
+  .producto-emoji{
+    font-size:4.5rem;
+    position:relative;z-index:2;
+    filter:drop-shadow(0 4px 8px rgba(0,0,0,.2));
+  }
+  .producto-badge{
+    position:absolute;top:.9rem;right:.9rem;
+    background:var(--crema);
+    color:var(--verde-oscuro);
+    padding:.3rem .75rem;
+    border-radius:20px;
+    font-size:.72rem;
+    font-weight:500;
+    z-index:3;
+    letter-spacing:.04em;
+  }
+  .producto-info{padding:1.3rem 1.3rem 1.4rem;display:flex;flex-direction:column;gap:.35rem;flex:1}
+  .producto-categoria{
+    font-family:'Caveat',cursive;
+    font-size:1rem;
+    color:var(--verde-medio);
+    line-height:1;
+  }
+  .producto-nombre{
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.3rem;
+    color:var(--verde-profundo);
+    line-height:1.15;
+    font-weight:500;
+  }
+  .producto-desc{
+    color:var(--texto-suave);
+    font-size:.83rem;
+    line-height:1.5;
+    margin:.2rem 0 .4rem;
+  }
+  .producto-footer{
+    margin-top:auto;
+    display:flex;justify-content:space-between;align-items:center;
+    padding-top:.9rem;
+    border-top:1px solid rgba(45,58,31,.08);
+  }
+  .producto-precio{
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.35rem;
+    color:var(--verde-profundo);
+    font-weight:600;
+  }
+  .producto-porciones{
+    font-size:.75rem;
+    color:var(--texto-suave);
+    margin-top:.15rem;
+  }
+  .producto-btn{
+    background:var(--verde-profundo);
+    color:var(--crema);
+    border:none;
+    padding:.5rem .95rem;
+    border-radius:25px;
+    font-size:.78rem;
+    cursor:pointer;
+    transition:all .3s;
+    text-decoration:none;
+    display:inline-flex;align-items:center;gap:.4rem;
+    font-family:'Outfit',sans-serif;
+  }
+  .producto-btn:hover{background:var(--verde-oscuro);transform:scale(1.05)}
+
+  /* ============================================
+     RESEÑAS
+     ============================================ */
+  .reseñas{
+    padding:7rem 0 7rem;
+    background:var(--crema);
+    overflow:hidden;
+    position:relative;
+  }
+  .reseñas-header{
+    max-width:1300px;margin:0 auto 3rem;
+    padding:0 2rem;
+    text-align:center;
+  }
+  .reseñas-header p{
+    color:var(--texto-suave);
+    font-size:1.05rem;
+    margin-top:.8rem;
+    max-width:520px;
+    margin-left:auto;margin-right:auto;
+  }
+  .reseñas-scroller{
+    position:relative;
+    padding:1.5rem 0 2rem;
+  }
+  .reseñas-track{
+    display:flex;
+    gap:2rem;
+    padding:1rem 2rem 2.5rem;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+  }
+  .reseñas-track::-webkit-scrollbar{display:none}
+
+  .reseñas-track::before, .reseñas-track::after{
+    content:'';flex:0 0 max(2rem, calc((100vw - 1100px) / 2));
+  }
+
+  .postit{
+    flex:0 0 290px;
+    aspect-ratio:1 / 1.05;
+    padding:1.6rem 1.4rem 1.4rem;
+    border-radius:4px 18px 6px 14px;
+    box-shadow:
+      0 1px 1px rgba(45,58,31,.1),
+      0 12px 24px rgba(45,58,31,.12),
+      0 22px 40px rgba(45,58,31,.08);
+    display:flex;flex-direction:column;
+    scroll-snap-align:center;
+    position:relative;
+    font-family:'Caveat',cursive;
+    color:var(--verde-profundo);
+    transition:transform .4s ease;
+  }
+  .postit:hover{transform:translateY(-6px) rotate(0deg) !important}
+  .postit::before{
+    content:'';
+    position:absolute;
+    top:-14px;left:50%;
+    width:90px;height:30px;
+    background:rgba(196,168,122,.55);
+    transform:translateX(-50%) rotate(-3deg);
+    box-shadow:0 2px 4px rgba(0,0,0,.08);
+    border-radius:1px;
+  }
+  .postit:nth-child(odd){transform:rotate(-1.4deg)}
+  .postit:nth-child(even){transform:rotate(1.6deg)}
+
+  .postit-stars{
+    font-family:'Outfit',sans-serif;
+    font-size:1rem;
+    letter-spacing:.15em;
+    color:var(--acento);
+    margin-bottom:.6rem;
+  }
+  .postit-quote{
+    font-size:1.35rem;
+    line-height:1.4;
+    font-weight:500;
+    flex:1;
+    text-wrap:pretty;
+  }
+  .postit-quote::before{content:'"'; margin-right:.05em}
+  .postit-quote::after{content:'"'}
+  .postit-meta{
+    margin-top:1rem;
+    display:flex;align-items:baseline;gap:.6rem;
+    font-family:'Outfit',sans-serif;
+  }
+  .postit-author{
+    font-weight:600;
+    font-size:.92rem;
+    color:var(--verde-profundo);
+  }
+  .postit-where{
+    font-size:.78rem;
+    color:var(--texto-suave);
+    font-style:italic;
+  }
+
+  /* Variaciones de color para los post-its */
+  .postit.c1{background:#f9e4a0}        /* amarillo */
+  .postit.c2{background:#f7c8c8}        /* rosa pálido */
+  .postit.c3{background:#c8e0c0}        /* verde menta */
+  .postit.c4{background:#fdfbf4}        /* crema */
+  .postit.c5{background:#e6d5f2}        /* lavanda */
+  .postit.c6{background:#fcd9b6}        /* durazno */
+
+  .reseñas-arrows{
+    display:flex;justify-content:center;gap:.8rem;
+    margin-top:1rem;
+  }
+  .reseñas-arrow{
+    width:48px;height:48px;border-radius:50%;
+    border:1px solid var(--verde-suave);
+    background:var(--blanco-roto);
+    color:var(--verde-profundo);
+    cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;
+    transition:all .25s;
+    font-size:1.2rem;
+  }
+  .reseñas-arrow:hover{background:var(--verde-profundo);color:var(--crema);border-color:var(--verde-profundo)}
+
+  /* ============================================
+     HISTORIA (refinada)
+     ============================================ */
+  .historia{
+    padding:7rem 2rem;
+    background:var(--crema-claro);
+    position:relative;
+    overflow:hidden;
+  }
+  .historia::before{
+    content:'';
+    position:absolute;top:-100px;right:-100px;
+    width:400px;height:400px;
+    background:radial-gradient(circle, rgba(138,160,99,.15) 0%, transparent 70%);
+    border-radius:50%;
+    pointer-events:none;
+  }
+  .historia-grid{
+    max-width:1100px;margin:0 auto;
+    display:grid;grid-template-columns:1fr 1.3fr;gap:5rem;
+    align-items:center;
+    position:relative;z-index:2;
+  }
+  .historia-img{
+    aspect-ratio:3/4;
+    background:linear-gradient(135deg, var(--verde-claro), var(--verde-medio));
+    border-radius:200px 200px 24px 24px;
+    position:relative;
+    overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 24px 50px rgba(45,58,31,.18);
+  }
+  .historia-img::before{
+    content:'';position:absolute;inset:0;
+    background-image:radial-gradient(circle at 30% 30%, rgba(255,255,255,.15) 0%, transparent 50%);
+  }
+  .historia-img img{
+    width:72%;height:72%;object-fit:contain;
+    filter:drop-shadow(0 10px 20px rgba(0,0,0,.2));
+  }
+  .historia-text p{
+    color:var(--texto-suave);
+    margin-bottom:1.2rem;
+    font-size:1.05rem;
+  }
+  .historia-text .firma{
+    font-family:'Caveat',cursive;
+    font-size:2rem;
+    color:var(--verde-medio);
+    margin-top:1.5rem;
+    display:block;
+  }
+
+  /* ============================================
+     CÓMO PEDIR
+     ============================================ */
+  .como-pedir{
+    padding:7rem 2rem;
+    background:var(--verde-profundo);
+    color:var(--crema);
+    position:relative;
+    overflow:hidden;
+  }
+  .como-pedir::before{
+    content:'';position:absolute;inset:0;
+    background-image:
+      radial-gradient(circle at 20% 80%, rgba(138,160,99,.3) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(138,160,99,.2) 0%, transparent 50%);
+  }
+  .pedir-inner{
+    max-width:1100px;margin:0 auto;
+    position:relative;z-index:2;
+    text-align:center;
+  }
+  .pedir-inner .seccion-label{color:var(--verde-suave)}
+  .pedir-inner .seccion-titulo{color:var(--crema);margin-bottom:1rem}
+  .pedir-inner .subtitulo{
+    color:var(--crema-oscuro);
+    font-size:1.1rem;
+    max-width:600px;margin:0 auto 4rem;
+  }
+  .pasos{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+    gap:2.5rem;
+    margin-bottom:4rem;
+  }
+  .paso{text-align:center}
+  .paso-num{
+    font-family:'Caveat',cursive;
+    font-size:5rem;
+    color:var(--verde-claro);
+    line-height:1;
+    margin-bottom:.5rem;
+    opacity:.7;
+  }
+  .paso h3{
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.5rem;
+    margin-bottom:.8rem;
+    font-weight:500;
+  }
+  .paso p{
+    color:var(--crema-oscuro);
+    font-size:.95rem;
+    line-height:1.6;
+  }
+  .pedir-cta{
+    background:var(--crema);
+    color:var(--verde-profundo);
+    padding:1.1rem 2.5rem;
+    border-radius:40px;
+    text-decoration:none;
+    font-weight:600;
+    font-size:1.05rem;
+    display:inline-flex;align-items:center;gap:.7rem;
+    transition:all .3s;
+    letter-spacing:.03em;
+  }
+  .pedir-cta:hover{background:var(--crema-claro);transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.2)}
+
+  /* ============================================
+     CONTACTO
+     ============================================ */
+  .contacto{
+    padding:7rem 2rem;
+    background:var(--crema-claro);
+  }
+  .contacto-inner{
+    max-width:1100px;margin:0 auto;
+    text-align:center;
+  }
+  .contacto-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
+    gap:2rem;
+    margin-top:3rem;
+  }
+  .contacto-card{
+    background:var(--blanco-roto);
+    padding:2.5rem 1.5rem;
+    border-radius:24px;
+    text-decoration:none;
+    color:var(--verde-profundo);
+    transition:all .3s;
+    border:1px solid rgba(45,58,31,.06);
+  }
+  .contacto-card:hover{transform:translateY(-5px); box-shadow:0 15px 30px rgba(45,58,31,.1)}
+  .contacto-icon{font-size:2.5rem;margin-bottom:1rem}
+  .contacto-card h3{
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.3rem;
+    margin-bottom:.5rem;
+    font-weight:500;
+  }
+  .contacto-card p{color:var(--texto-suave);font-size:.95rem}
+
+  /* ============================================
+     FOOTER
+     ============================================ */
+  footer{
+    background:var(--verde-profundo);
+    color:var(--crema-oscuro);
+    padding:3rem 2rem 2rem;
+    text-align:center;
+  }
+  .footer-logo{
+    width:60px;height:60px;border-radius:50%;
+    margin:0 auto 1rem;display:block;
+    background:var(--crema);padding:3px;
+  }
+  footer p{font-size:.9rem;margin-bottom:.5rem}
+  footer .firma-footer{
+    font-family:'Caveat',cursive;
+    font-size:1.4rem;
+    color:var(--verde-suave);
+    margin-top:1rem;
+  }
+
+  /* ============================================
+     WHATSAPP FLOAT
+     ============================================ */
+  .wa-float{
+    position:fixed;
+    bottom:1.5rem;right:1.5rem;
+    background:#25D366;
+    color:#fff;
+    width:60px;height:60px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 25px rgba(37,211,102,.4);
+    text-decoration:none;
+    z-index:99;
+    transition:all .3s;
+    animation:waPulse 2.4s infinite;
+  }
+  .wa-float:hover{transform:scale(1.1)}
+  .wa-float svg{width:32px;height:32px}
+  @keyframes waPulse{
+    0%{box-shadow:0 8px 25px rgba(37,211,102,.4), 0 0 0 0 rgba(37,211,102,.5)}
+    70%{box-shadow:0 8px 25px rgba(37,211,102,.4), 0 0 0 18px rgba(37,211,102,0)}
+    100%{box-shadow:0 8px 25px rgba(37,211,102,.4), 0 0 0 0 rgba(37,211,102,0)}
+  }
+
+  /* ============================================
+     RESPONSIVE
+     ============================================ */
+  @media(max-width:1100px){
+    .bs-grid{grid-template-columns:repeat(2, 1fr)}
+  }
+  @media(max-width:900px){
+    .historia-grid{grid-template-columns:1fr;gap:3rem}
+    .nav-links{display:none}
+    .menu-toggle{display:block}
+    .nav-links.abierto{
+      display:flex;flex-direction:column;
+      position:absolute;top:100%;left:0;right:0;
+      background:var(--crema);padding:1.5rem;
+      gap:1.2rem;border-bottom:1px solid rgba(45,58,31,.1);
+    }
+    .nav-links.abierto a{color:var(--verde-oscuro);text-shadow:none}
+    .bs-header{flex-direction:column;align-items:flex-start}
+    .bs-header .bs-sub{text-align:left}
+  }
+  @media(max-width:600px){
+    nav{padding:1rem}
+    .best-sellers,.catalogo,.reseñas,.como-pedir,.contacto,.historia{padding-left:1.2rem;padding-right:1.2rem}
+    .reseñas{padding-left:0;padding-right:0}
+    .reseñas-header{padding-left:1.2rem;padding-right:1.2rem}
+    .bs-grid{grid-template-columns:1fr;gap:1.2rem}
+    .productos-grid{grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:1.2rem}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================
+     NAVEGACIÓN
+     ============================================ -->
+<nav id="nav">
+  <div class="nav-inner" style="font-family: Poppins">
+    <a href="#inicio" class="nav-logo">
+      <img src="assets/logo.png" alt="Elena Bakery"/>
+      <span>Elena Bakery</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#best-sellers">Más vendidos</a></li>
+      <li><a href="#catalogo">Catálogo</a></li>
+      <li><a href="#reseñas">Reseñas</a></li>
+      <li><a href="#pedir">Cómo pedir</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+    <a href="https://wa.me/56944832160?text=Hola%20Elena%20Bakery,%20quiero%20hacer%20un%20pedido" class="nav-cta">Hacer pedido</a>
+    <button class="menu-toggle" onclick="document.getElementById('navLinks').classList.toggle('abierto')" aria-label="Menú">☰</button>
+  </div>
+</nav>
+
+<!-- ============================================
+     PORTADA
+     ============================================ -->
+<section class="portada" id="inicio" data-screen-label="01 Portada">
+  <div class="portada-bg"></div>
+  <div class="portada-overlay"></div>
+  <div class="portada-vignette"></div>
+
+  <!-- Atributos data-font: edita directamente en el HTML -->
+  <div class="portada-content">
+    <div class="portada-eyebrow" data-font="Bitter" style="font-family: var(--font-eyebrow, Bitter); font-size: 16px">pastelería &middot; repostería artesanal &middot; chile</div>
+
+    <h1 class="titulo-portada" id="titulo" data-anim="cascade">
+      <span class="linea-elena" id="lineaElena" data-font="Oliver" style="font-family: Oliver"></span>
+      <span class="linea-bakery" id="lineaBakery" data-font="Manrope" style="font-family: Oliver; font-size: 60px; text-align: right; margin: -14px -100px 0px 50px"></span>
+    </h1>
+
+    <p class="portada-sub" data-font="Outfit" style="font-family: var(--font-sub, 'Outfit')">Tortas, cheesecakes, pies y antojitos preparados a mano con recetas tradicionales y los mejores ingredientes.</p>
+
+    <div class="portada-cta">
+      <a href="#best-sellers" class="btn-primary">Ver más vendidos →</a>
+      <a href="https://wa.me/56944832160?text=Hola%20Elena%20Bakery,%20me%20gustaría%20hacer%20un%20pedido" class="btn-ghost">
+        <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+        Pedir por WhatsApp
+      </a>
+    </div>
+  </div>
+
+  <div class="scroll-indicator">
+    <span>desliza</span>
+    <span class="line"></span>
+  </div>
+</section>
+
+<!-- ============================================
+     BEST SELLERS
+     ============================================ -->
+<section class="best-sellers" id="best-sellers" data-screen-label="02 Más vendidos">
+  <div class="bs-header">
+    <div>
+      <span class="seccion-label">los favoritos de las clientas</span>
+      <h2 class="seccion-titulo">Más <em>vendidos</em> del año</h2>
+    </div>
+    <p class="bs-sub" data-font="Outfit" style="font-family: var(--font-bssub, 'Outfit')">Las recetas que más nos piden. Si no sabes por dónde empezar, parte por aquí.</p>
+  </div>
+  <div class="bs-grid" id="bestSellersGrid"></div>
+</section>
+
+<!-- ============================================
+     CATÁLOGO COMPLETO
+     ============================================ -->
+<section class="catalogo" id="catalogo" data-screen-label="03 Catálogo">
+  <div class="catalogo-header">
+    <span class="seccion-label">nuestro menú completo</span>
+    <h2 class="seccion-titulo">Catálogo <em>2026</em></h2>
+    <p data-font="Outfit" style="font-family: var(--font-catdesc, 'Outfit')">Cada producto se prepara por encargo. Los precios incluyen IVA. Selecciona el que te enamore y pídelo por WhatsApp.</p>
+  </div>
+
+  <div class="filtros" id="filtros">
+    <button class="filtro-btn activo" data-cat="todos">Todos</button>
+    <button class="filtro-btn" data-cat="Tortas">Tortas</button>
+    <button class="filtro-btn" data-cat="Cheesecakes">Cheesecakes</button>
+    <button class="filtro-btn" data-cat="Pies y Tartas">Pies y Tartas</button>
+    <button class="filtro-btn" data-cat="Antojitos">Antojitos dulces</button>
+  </div>
+
+  <div class="productos-grid" id="productosGrid"></div>
+</section>
+
+<!-- ============================================
+     RESEÑAS
+     ============================================ -->
+<section class="reseñas" id="reseñas" data-screen-label="04 Reseñas">
+  <div class="reseñas-header">
+    <span class="seccion-label">lo que dicen nuestras clientas</span>
+    <h2 class="seccion-titulo">Dulce de <em>verdad</em></h2>
+    <p data-font="Outfit" style="font-family: var(--font-resintro, 'Outfit')">Cada reseña es una historia real de cumpleaños, sobremesas y antojos resueltos.</p>
+  </div>
+
+  <div class="reseñas-scroller">
+    <div class="reseñas-track" id="reseñasTrack"></div>
+  </div>
+
+  <div class="reseñas-arrows">
+    <button class="reseñas-arrow" id="resPrev" aria-label="Anterior">←</button>
+    <button class="reseñas-arrow" id="resNext" aria-label="Siguiente">→</button>
+  </div>
+</section>
+
+<!-- ============================================
+     HISTORIA
+     ============================================ -->
+<section class="historia" id="historia" data-screen-label="05 Historia">
+  <div class="historia-grid">
+    <div class="historia-img">
+      <img src="assets/logo.png" alt="Elena Bakery"/>
+    </div>
+    <div class="historia-text">
+      <span class="seccion-label">nuestra historia</span>
+      <h2 class="seccion-titulo">Sabores que <em>enamoran</em>, hechos a mano</h2>
+      <p data-font="Outfit" style="font-family: var(--font-historia1, 'Outfit')">Elena Bakery nació del amor por la repostería tradicional chilena y el deseo de compartir momentos dulces con cada persona que prueba nuestros productos.</p>
+      <p data-font="Outfit" style="font-family: var(--font-historia2, 'Outfit')">Cada torta, cada cheesecake, cada galleta se prepara con dedicación, recetas cuidadosamente probadas e ingredientes seleccionados. No producimos en masa: cada pedido es único, hecho especialmente para ti.</p>
+      <p>Si buscas algo personalizado para una ocasión especial, podemos crearlo. Solo cuéntanos qué imaginas.</p>
+      <span class="firma" style="width: 475px; font-family: &quot;DM Sans&quot;">— con cariño, Elena Bakery</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     CÓMO PEDIR
+     ============================================ -->
+<section class="como-pedir" id="pedir" data-screen-label="06 Cómo pedir">
+  <div class="pedir-inner">
+    <span class="seccion-label">así de fácil</span>
+    <h2 class="seccion-titulo">Cómo pedir tu dulce</h2>
+    <p class="subtitulo" style="font-family: Arial">Sin formularios complicados. Conversamos directamente por WhatsApp y coordinamos cada detalle de tu pedido.</p>
+
+    <div class="pasos">
+      <div class="paso">
+        <div class="paso-num">1</div>
+        <h3>Elige tu favorito</h3>
+        <p style="font-family: Arial">Revisa el catálogo y escoge el producto, tamaño y cualquier detalle especial.</p>
+      </div>
+      <div class="paso">
+        <div class="paso-num">2</div>
+        <h3>Escríbenos</h3>
+        <p style="font-family: Arial">Cuéntanos por WhatsApp qué quieres, para cuándo y a dónde lo necesitas.</p>
+      </div>
+      <div class="paso">
+        <div class="paso-num">3</div>
+        <h3>Confirma tu pedido</h3>
+        <p style="font-family: Arial">Te confirmamos disponibilidad, precio final y forma de pago (transferencia).</p>
+      </div>
+      <div class="paso">
+        <div class="paso-num">4</div>
+        <h3>Disfruta</h3>
+        <p style="font-family: Arial">Recibe tu dulce fresco, listo para hacer especial cualquier ocasión.</p>
+      </div>
+    </div>
+
+    <a href="https://wa.me/56944832160?text=Hola%20Elena%20Bakery,%20quiero%20hacer%20un%20pedido" class="pedir-cta">
+      <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+      Pedir por WhatsApp
+    </a>
+  </div>
+</section>
+
+<!-- ============================================
+     CONTACTO
+     ============================================ -->
+<section class="contacto" id="contacto" data-screen-label="07 Contacto">
+  <div class="contacto-inner">
+    <span class="seccion-label">hablemos</span>
+    <h2 class="seccion-titulo">Conversemos sobre tu <em>próximo dulce</em></h2>
+    <div class="contacto-grid">
+      <a href="https://wa.me/56944832160" class="contacto-card">
+        <div class="contacto-icon">💬</div>
+        <h3 style="font-family: Manrope">WhatsApp</h3>
+        <p style="font-family: Arial">+56 9 4483 2160</p>
+      </a>
+      <a href="https://instagram.com/elenabakery.cl" class="contacto-card">
+        <div class="contacto-icon">📷</div>
+        <h3 style="font-family: Manrope">Instagram</h3>
+        <p style="font-family: Arial">@elenabakery.cl</p>
+      </a>
+      <a href="mailto:karenveram42@gmail.com" class="contacto-card">
+        <div class="contacto-icon">✉️</div>
+        <h3 style="font-family: Manrope">Correo</h3>
+        <p style="font-family: Arial">karenveram42@gmail.com</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     FOOTER
+     ============================================ -->
+<footer>
+  <img src="assets/logo.png" alt="Elena Bakery" class="footer-logo"/>
+  <p style="font-family: Arial">Elena Bakery - Pastelería y Repostería Artesanal</p>
+  <p style="font-family: Arial">Los Andes, Chile 2026</p>
+  <p class="firma-footer">hecho con cariño 🤍</p>
+</footer>
+
+<!-- WhatsApp flotante -->
+<a href="https://wa.me/56944832160?text=Hola%20Elena%20Bakery,%20quiero%20hacer%20un%20pedido" class="wa-float" aria-label="WhatsApp">
+  <svg fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+</a>
+
+
+<!-- ============================================
+     DATA + LÓGICA
+     ============================================ -->
+<script>
+const TEL = '56944832160';
+
+// ----- Catálogo -----
+const productos = [
+  {id:'PROD-012', nombre:'Torta Caluga', cat:'Tortas', porciones:20, precio:41055, emoji:'🍰', desc:'Hojarasca crujiente con sedosa crema de caluga casera. Coronada con frambuesas frescas, toffee y nueces picadas.', badge:'Especial'},
+  {id:'PROD-011', nombre:'Torta Selva Negra', cat:'Tortas', porciones:10, precio:14875, emoji:'🍫', desc:'Bizcocho de chocolate extra húmedo con almíbar, capas de chantillí y mermelada de frambuesas.'},
+  {id:'PROD-025', nombre:'Selva Negra económica', cat:'Tortas', porciones:22, precio:32130, emoji:'🍫', desc:'Versión grande de nuestra Selva Negra clásica para compartir en familia.'},
+  {id:'PROD-017', nombre:'Torta Red Velvet', cat:'Tortas', porciones:20, precio:39270, emoji:'❤️', desc:'Bizcocho aterciopelado carmín con toque de cacao. Frosting de queso crema y migas de bizcocho red velvet.', badge:'Top'},
+  {id:'PROD-019', nombre:'Carrot Cake', cat:'Tortas', porciones:30, precio:55335, emoji:'🥕', desc:'Bizcocho especiado con zanahoria y nueces. Frosting de queso crema, ralladura de naranja y canela.'},
+  {id:'PROD-034', nombre:'Carrot Cake mini', cat:'Tortas', porciones:4, precio:23324, emoji:'🥕', desc:'Versión mini (14 cm) de nuestro Carrot Cake. Perfecto para celebraciones íntimas.'},
+  {id:'PROD-032', nombre:'Carrot Cake sin azúcar', cat:'Tortas', porciones:30, precio:64855, emoji:'🥕', desc:'Versión sin azúcar de nuestro Carrot Cake, manteniendo toda su humedad y sabor.', badge:'Sin azúcar'},
+  {id:'PROD-001', nombre:'Frambuesa sin azúcar', cat:'Tortas', porciones:20, precio:30345, emoji:'🫐', desc:'Torta especial sin azúcar con frambuesas frescas. Ideal para quienes cuidan su alimentación.', badge:'Sin azúcar'},
+  {id:'PROD-009', nombre:'Torta Mami Gina', cat:'Tortas', porciones:20, precio:21420, emoji:'🎂', desc:'Receta familiar clásica que conquista a todos. Sabor tradicional chileno.'},
+  {id:'PROD-007', nombre:'Azul Manjar y Durazno', cat:'Tortas', porciones:20, precio:26180, emoji:'🍑', desc:'Bizcocho con manjar y durazno, decoración azul elegante para ocasiones especiales.'},
+  {id:'PROD-008', nombre:'Manjar Durazno', cat:'Tortas', porciones:20, precio:26180, emoji:'🍑', desc:'Clásica combinación de manjar artesanal con duraznos en almíbar. Un imperdible chileno.'},
+  {id:'PROD-018', nombre:'Torta Matilda', cat:'Tortas', porciones:20, precio:21420, emoji:'🎂', desc:'Receta familiar versátil. Disponible para 15 o 20 personas.'},
+  {id:'PROD-010', nombre:'Torta Matilda XL', cat:'Tortas', porciones:40, precio:60690, emoji:'🍫', desc:'Versión grande de chocolate, perfecta para celebraciones con muchos invitados.', badge:'Para 40'},
+  {id:'PROD-027', nombre:'Hojarasca Manjar', cat:'Tortas', porciones:25, precio:29155, emoji:'🥮', desc:'Capas de hojarasca crujiente con manjar artesanal. Clásico chileno por excelencia.'},
+  {id:'PROD-030', nombre:'Hojarasca sin azúcar', cat:'Tortas', porciones:25, precio:32725, emoji:'🥮', desc:'Versión sin azúcar de nuestra hojarasca con manjar. Manteniendo el sabor tradicional.', badge:'Sin azúcar'},
+  {id:'PROD-031', nombre:'Hojarasca mini sin azúcar', cat:'Tortas', porciones:4, precio:14161, emoji:'🥮', desc:'Versión mini (14 cm) sin azúcar. Para 4 personas.', badge:'Sin azúcar'},
+  {id:'PROD-015', nombre:'Panqueque Naranja', cat:'Tortas', porciones:25, precio:42840, emoji:'🍊', desc:'Delgadas capas de panqueque con crema de naranja natural. Glaseado cítrico brillante.'},
+  {id:'PROD-016', nombre:'Panqueque Choco-Naranja', cat:'Tortas', porciones:25, precio:47005, emoji:'🍫', desc:'Variante de panqueque con chocolate y naranja. Combinación irresistible.'},
+  {id:'PROD-004', nombre:'Torta Harry Potter', cat:'Tortas', porciones:20, precio:26180, emoji:'⚡', desc:'Diseño temático Harry Potter. Personalizable para fans del mundo mágico.', badge:'Temática'},
+  {id:'PROD-006', nombre:'Torta Roblox', cat:'Tortas', porciones:20, precio:20230, emoji:'🎮', desc:'Diseño temático Roblox. Perfecta para cumpleaños infantiles.', badge:'Temática'},
+  {id:'PROD-005', nombre:'Torta Bárbara sin lactosa', cat:'Tortas', porciones:20, precio:30345, emoji:'🎂', desc:'Especialmente formulada sin lactosa, sin perder textura ni sabor.', badge:'Sin lactosa'},
+  {id:'PROD-035', nombre:'Manjar-Crema Pastelera s/azúcar', cat:'Tortas', porciones:20, precio:21420, emoji:'🍮', desc:'Combinación de manjar y crema pastelera, sin azúcar añadida.', badge:'Sin azúcar'},
+  {id:'PROD-036', nombre:'Manjar-Crema mini s/azúcar', cat:'Tortas', porciones:4, precio:9877, emoji:'🍮', desc:'Versión mini (14 cm) sin azúcar. Ideal para 4 personas.', badge:'Sin azúcar'},
+  {id:'PROD-020', nombre:'Cheesecake Frambuesa', cat:'Cheesecakes', porciones:16, precio:32725, emoji:'🍰', desc:'Base de galleta de mantequilla con crema de queso aterciopelada. Coronado con salsa de frambuesa.', badge:'Favorito'},
+  {id:'PROD-021', nombre:'Cheesecake Maracuyá', cat:'Cheesecakes', porciones:16, precio:34510, emoji:'🥭', desc:'Crema de queso densa y sedosa. Coronado con coulis de maracuyá natural con semillas.'},
+  {id:'PROD-022', nombre:'Cheesecake Frutos Rojos', cat:'Cheesecakes', porciones:16, precio:32130, emoji:'🫐', desc:'Crema de queso aireada con arándanos, frambuesas y moras bañados en coulis del bosque.'},
+  {id:'PROD-002', nombre:'Pie de Limón', cat:'Pies y Tartas', porciones:15, precio:28560, emoji:'🍋', desc:'Masa quebrada crocante con crema de limón equilibrada. Merengue suizo firme y tostado.', badge:'Clásico'},
+  {id:'PROD-003', nombre:'Kuchen Frambuesas', cat:'Pies y Tartas', porciones:15, precio:26775, emoji:'🥧', desc:'Kuchen sureño tradicional con frambuesas frescas. Receta de la abuela.'},
+  {id:'PROD-023', nombre:'Mini Tartaleta Durazno-Piña', cat:'Pies y Tartas', porciones:1, precio:2023, emoji:'🥧', desc:'Masa sablé con crema pastelera, durazno y piña. Tamaño individual de 8 cm.'},
+  {id:'PROD-026', nombre:'Profiteroles cocktail', cat:'Antojitos', porciones:10, precio:4641, emoji:'🍩', desc:'Caja de 10 unidades. Masa choux con manjar, chantillí y chocolate semiamargo.', badge:'Caja x10'},
+  {id:'PROD-028', nombre:'Cinnamon Rolls con frosting', cat:'Antojitos', porciones:2, precio:3094, emoji:'🌀', desc:'Par de cinnamon rolls esponjosos con frosting de queso crema.', badge:'Par'},
+  {id:'PROD-029', nombre:'Cinnamon Rolls con glaseado', cat:'Antojitos', porciones:2, precio:1904, emoji:'🌀', desc:'Par de cinnamon rolls esponjosos con glaseado clásico de azúcar.', badge:'Par'},
+  {id:'PROD-013', nombre:'Galletas Oreo', cat:'Antojitos', porciones:2, precio:3570, emoji:'🍪', desc:'Cartucho de 2 galletas especiales tipo Oreo. Perfectas para acompañar el café.'},
+  {id:'PROD-014', nombre:'Berlines', cat:'Antojitos', porciones:1, precio:1190, emoji:'🍩', desc:'Suaves y esponjosos, rellenos de crema pastelera casera y manjar. Unidad.'},
+  {id:'PROD-024', nombre:'Alfajores chocolate', cat:'Antojitos', porciones:6, precio:7497, emoji:'🍪', desc:'Caja de 6 alfajores con galleta suave, manjar artesanal y baño de chocolate.', badge:'Caja x6'},
+  {id:'PROD-037', nombre:'Alfajores galleta', cat:'Antojitos', porciones:6, precio:6902, emoji:'🍪', desc:'Caja de 6 alfajores con galleta comercial premium y relleno tradicional.', badge:'Caja x6'},
+  {id:'PROD-038', nombre:'Alfajores relleno Oreo', cat:'Antojitos', porciones:6, precio:7497, emoji:'🍪', desc:'Caja de 6 alfajores con galleta comercial y relleno sabor Oreo. Una delicia.', badge:'Caja x6'},
+  {id:'PROD-033', nombre:'Carrot Cake mini s/azúcar', cat:'Tortas', porciones:4, precio:27132, emoji:'🥕', desc:'Versión mini (14 cm) sin azúcar. Para 4 personas.', badge:'Sin azúcar'}
+];
+
+// ----- Best sellers (4 destacados) -----
+const BEST_SELLER_IDS = ['PROD-012', 'PROD-017', 'PROD-020', 'PROD-002'];
+
+// ----- Reseñas (placeholder; editar abajo) -----
+const reseñas = [
+  {autor:'Camila R.', donde:'Cumpleaños de mi hija', stars:5, color:'c1',
+   quote:'La torta Caluga fue un escándalo. Mis amigas pidieron el contacto antes de probar el segundo bocado.'},
+  {autor:'Macarena P.', donde:'Once de domingo', stars:5, color:'c2',
+   quote:'El cheesecake de frambuesa parece de revista y sabe a casa. Lo encargo cada mes sin culpa.'},
+  {autor:'Javiera S.', donde:'Pedido sin azúcar', stars:5, color:'c3',
+   quote:'Mi mamá es diabética y por fin podemos celebrar con torta de verdad. Sabor impecable.'},
+  {autor:'Daniela M.', donde:'Bautizo familiar', stars:5, color:'c4',
+   quote:'Encargué una Red Velvet personalizada y superó todas las expectativas. Atención dulce, literal.'},
+  {autor:'Constanza V.', donde:'Regalo sorpresa', stars:5, color:'c5',
+   quote:'Pie de limón con merengue perfecto, ni muy dulce ni ácido. Y la entrega puntual a la hora exacta.'},
+  {autor:'Isidora L.', donde:'Matrimonio civil', stars:5, color:'c6',
+   quote:'Pedí Carrot Cake para 30 personas y todos preguntaron quién la hizo. Karen es una artista.'},
+];
+
+// ----- Render: portada -----
+function renderTitulo(){
+  const elena = document.getElementById('lineaElena');
+  const bakery = document.getElementById('lineaBakery');
+  const wrapLetter = (ch, cls='') => {
+    if(ch === ' ') return '<span class="ltr sp">&nbsp;</span>';
+    return `<span class="ltr ${cls}">${ch}</span>`;
+  };
+  elena.innerHTML = [...'ELENA'].map(c => wrapLetter(c)).join('');
+  bakery.innerHTML = [...'BAKERY'].map((c,i,a) => wrapLetter(c, i===0 || i===a.length-1 ? 'swash' : '')).join('');
+}
+
+function playTitleAnim(){
+  const letters = document.querySelectorAll('#titulo .ltr');
+  letters.forEach(l => l.classList.remove('in'));
+  // baseline stagger 80ms, ajustado por velocidad
+  const speed = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anim-speed')) || 1;
+  letters.forEach((l, i) => {
+    setTimeout(() => l.classList.add('in'), i * (80 / speed));
+  });
+  const total = letters.length * (80 / speed) + 1000;
+  setTimeout(() => document.querySelector('.portada').classList.add('titled'), total - 600);
+}
+
+// ----- Render: best sellers -----
+function precioFmt(n){ return '$' + n.toLocaleString('es-CL'); }
+function waLink(p){
+  const msj = encodeURIComponent(`Hola Elena Bakery! Quiero pedir:\n\n🍰 ${p.nombre}\nPorciones: ${p.porciones}\nPrecio: ${precioFmt(p.precio)}\n\n¿Cuándo podría tenerlo? Gracias!`);
+  return `https://wa.me/${TEL}?text=${msj}`;
+}
+
+function renderBestSellers(){
+  const grid = document.getElementById('bestSellersGrid');
+  const items = BEST_SELLER_IDS.map(id => productos.find(p => p.id === id)).filter(Boolean);
+  grid.innerHTML = items.map((p, i) => `
+    <a class="bs-card" href="${waLink(p)}" target="_blank" rel="noopener">
+      <div class="bs-card-img">
+        <span class="bs-rank">No. ${i+1}</span>
+        ${p.badge ? `<span class="bs-badge">${p.badge}</span>` : ''}
+        <div class="bs-card-emoji">${p.emoji}</div>
+      </div>
+      <div class="bs-card-info">
+        <div class="bs-cat">${p.cat}</div>
+        <h3 class="bs-nombre">${p.nombre}</h3>
+        <p class="bs-desc">${p.desc}</p>
+        <div class="bs-footer">
+          <div>
+            <div class="bs-precio">${precioFmt(p.precio)}</div>
+            <div class="bs-porciones">${p.porciones} ${p.porciones===1?'porción':'porciones'}</div>
+          </div>
+          <span class="bs-pedir">Pedir →</span>
+        </div>
+      </div>
+    </a>
+  `).join('');
+}
+
+// ----- Render: catálogo -----
+function renderProductos(cat='todos'){
+  const grid = document.getElementById('productosGrid');
+  const filtrados = cat === 'todos' ? productos : productos.filter(p => p.cat === cat);
+  grid.innerHTML = filtrados.map(p => `
+    <article class="producto-card">
+      <div class="producto-imagen">
+        ${p.badge ? `<span class="producto-badge">${p.badge}</span>` : ''}
+        <div class="producto-emoji">${p.emoji}</div>
+      </div>
+      <div class="producto-info">
+        <div class="producto-categoria">${p.cat}</div>
+        <h3 class="producto-nombre">${p.nombre}</h3>
+        <p class="producto-desc">${p.desc}</p>
+        <div class="producto-footer">
+          <div>
+            <div class="producto-precio">${precioFmt(p.precio)}</div>
+            <div class="producto-porciones">${p.porciones} ${p.porciones===1?'porción':'porciones'}</div>
+          </div>
+          <a href="${waLink(p)}" class="producto-btn" target="_blank" rel="noopener">Pedir →</a>
+        </div>
+      </div>
+    </article>
+  `).join('');
+}
+
+// ----- Render: reseñas -----
+function renderReseñas(){
+  const track = document.getElementById('reseñasTrack');
+  track.innerHTML = reseñas.map(r => `
+    <div class="postit ${r.color}">
+      <div class="postit-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</div>
+      <p class="postit-quote">${r.quote}</p>
+      <div class="postit-meta">
+        <span class="postit-author">${r.autor}</span>
+        <span class="postit-where">${r.donde}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ----- Filtros -----
+function bindFiltros(){
+  document.querySelectorAll('.filtro-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
+      btn.classList.add('activo');
+      renderProductos(btn.dataset.cat);
+    });
+  });
+}
+
+// ----- Flechas reseñas -----
+function bindReseñas(){
+  const track = document.getElementById('reseñasTrack');
+  const step = () => {
+    const item = track.querySelector('.postit');
+    return item ? item.getBoundingClientRect().width + 32 : 320;
+  };
+  document.getElementById('resPrev').addEventListener('click', () => track.scrollBy({left: -step(), behavior:'smooth'}));
+  document.getElementById('resNext').addEventListener('click', () => track.scrollBy({left:  step(), behavior:'smooth'}));
+}
+
+// ----- Nav scroll -----
+function bindNav(){
+  const nav = document.getElementById('nav');
+  const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 60);
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+  document.querySelectorAll('.nav-links a').forEach(a => {
+    a.addEventListener('click', () => document.getElementById('navLinks').classList.remove('abierto'));
+  });
+}
+
+// ----- Reveal best-sellers on scroll -----
+function bindReveal(){
+  const io = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if(e.isIntersecting){
+        setTimeout(() => e.target.classList.add('reveal'), i * 120);
+        io.unobserve(e.target);
+      }
+    });
+  }, {threshold:0.15});
+  document.querySelectorAll('.bs-card').forEach(c => io.observe(c));
+}
+
+// ----- Init -----
+renderTitulo();
+renderBestSellers();
+renderProductos();
+renderReseñas();
+bindFiltros();
+bindReseñas();
+bindNav();
+bindReveal();
+
+window.addEventListener('load', () => {
+  const portada = document.querySelector('.portada');
+  portada.classList.add('loaded');
+  setTimeout(playTitleAnim, 250);
+});
+
+</script>
+
+
+</body>
+</html>
