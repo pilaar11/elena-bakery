@@ -4,15 +4,15 @@
  * INSTALACIÓN / ACTUALIZACIÓN:
  * 1. En tu Google Sheet: Extensiones > Apps Script. Borra todo y pega ESTO. Guarda (💾).
  * 2. Arriba elige la función "configurar" y pulsa ▶ Ejecutar (autoriza permisos).
+ *    Esto crea/ordena las pestañas Y repara los Items que ya tengas.
  * 3. Implementar > Gestionar implementaciones > ✏️ editar >
  *    Versión: "Nueva versión" > Implementar.   (El URL /exec NO cambia.)
  *
  * CÓMO FUNCIONA:
  * - "Pedidos": una fila por pedido. Aquí controlas el ESTADO (marcas "Abonado").
- * - "Items": una fila por producto (se llena solo). Es el motor de los cálculos.
+ * - "Items": una fila por producto (se llena solo). Col. Estado se cruza con Pedidos.
  * - "Producción": detalle por ítem de los pedidos ABONADOS (cada producto en su línea).
  * - "Resumen": CUÁNTO HORNEAR por día y producto (suma cantidades del mismo día).
- * El estado se cruza en vivo: al marcar "Abonado" en Pedidos, aparece en las vistas.
  *
  * NOTA: los pedidos hechos ANTES de tener el desglose en "Items" no aparecerán
  * en Producción/Resumen. Los nuevos sí.
@@ -28,7 +28,7 @@ const ESTADOS = ['Solicitado', 'Abonado', 'Entregado', 'Anulado'];
 const HEADER_PEDIDOS = ['N° Pedido', 'Fecha/hora', 'Teléfono', 'Fecha de entrega',
                         'Entrega (orden)', 'Total', 'Abono 50%', 'Detalle', 'Estado'];
 const HEADER_ITEMS   = ['Entrega (orden)', 'Fecha de entrega', 'N° Pedido', 'Producto',
-                        'Porciones', 'Cantidad', 'Opciones'];
+                        'Porciones', 'Cantidad', 'Opciones', 'Estado'];
 
 function doPost(e){
   const lock = LockService.getScriptLock();
@@ -52,6 +52,10 @@ function doPost(e){
         data.fechaEntregaISO || '', data.fechaEntrega || '', numero,
         it.nombre || '', it.porciones || '', it.qty || '', it.opciones || ''
       ]);
+      const r = items.getLastRow();
+      const cell = items.getRange(r, 8);
+      cell.setNumberFormat('General');                 // evita que la fórmula quede como texto
+      cell.setFormula('=IFERROR(VLOOKUP(C' + r + ', ' + SHEET_PEDIDOS + '!$A:$I, 9, FALSE),"")');
     });
 
     return json({ ok: true, numero: numero });
@@ -77,6 +81,7 @@ function configurar(){
   sh.getRange(2, colEstado, 2000, 1).setDataValidation(regla);
 
   pintarEstados_(sh, colEstado);
+  repararItems_();        // arregla la columna Estado de los Items existentes
   crearProduccion_();
   crearResumen_();
   SpreadsheetApp.getActiveSpreadsheet()
@@ -95,6 +100,21 @@ function obtenerHoja_(nombre, header){
   return sh;
 }
 
+// Re-escribe la fórmula de Estado (col H) de todos los Items, con formato General
+// para que se evalúe (y no quede como texto).
+function repararItems_(){
+  const items = obtenerHoja_(SHEET_ITEMS, HEADER_ITEMS);
+  const last = items.getLastRow();
+  if(last < 2) return;
+  const rng = items.getRange(2, 8, last - 1, 1);
+  rng.setNumberFormat('General');
+  const fs = [];
+  for(let r = 2; r <= last; r++){
+    fs.push(['=IFERROR(VLOOKUP(C' + r + ', ' + SHEET_PEDIDOS + '!$A:$I, 9, FALSE),"")']);
+  }
+  rng.setFormulas(fs);
+}
+
 function pintarEstados_(sh, colEstado){
   const letra = columnaLetra_(colEstado);
   const rango = sh.getRange(2, 1, 2000, HEADER_PEDIDOS.length);
@@ -108,13 +128,6 @@ function pintarEstados_(sh, colEstado){
   sh.setConditionalFormatRules(reglas);
 }
 
-// Columna "virtual" de estado: cruza el N° de pedido (Items col C) con el
-// estado en Pedidos. Se calcula en vivo, sin fórmulas por celda en Items.
-function estadoVirtual_(){
-  return 'ARRAYFORMULA(IF(' + SHEET_ITEMS + '!C2:C="","",' +
-         'IFERROR(VLOOKUP(' + SHEET_ITEMS + '!C2:C,' + SHEET_PEDIDOS + '!A:I,9,FALSE),"")))';
-}
-
 function crearProduccion_(){
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const p = ss.getSheetByName(SHEET_PRODUCCION) || ss.insertSheet(SHEET_PRODUCCION);
@@ -123,12 +136,8 @@ function crearProduccion_(){
     .setValue('PEDIDOS A PRODUCIR (solo abonados) — detalle por ítem, se actualiza solo')
     .setFontWeight('bold');
   p.getRange('A3').setFormula(
-    '=IFERROR(QUERY({' + SHEET_ITEMS + '!A2:G, ' + estadoVirtual_() + '}, ' +
-    '"select Col2, Col3, Col4, Col5, Col6, Col7 where Col8 = \'Abonado\' ' +
-    'order by Col1, Col3 ' +
-    'label Col2 \'Fecha de entrega\', Col3 \'N° Pedido\', Col4 \'Producto\', ' +
-    'Col5 \'Porciones\', Col6 \'Cantidad\', Col7 \'Opciones\'", 0), ' +
-    '"Aún no hay pedidos abonados.")');
+    '=IFERROR(QUERY(' + SHEET_ITEMS + '!A:H, "select B, C, D, E, F, G ' +
+    'where H = \'Abonado\' order by A, C", 1), "Aún no hay pedidos abonados.")');
   p.setFrozenRows(3);
 }
 
@@ -140,11 +149,9 @@ function crearResumen_(){
     .setValue('CUÁNTO HORNEAR (solo abonados) — por día y producto, se actualiza solo')
     .setFontWeight('bold');
   p.getRange('A3').setFormula(
-    '=IFERROR(QUERY({' + SHEET_ITEMS + '!A2:G, ' + estadoVirtual_() + '}, ' +
-    '"select Col1, Col4, Col5, sum(Col6) where Col8 = \'Abonado\' ' +
-    'group by Col1, Col4, Col5 order by Col1 ' +
-    'label Col1 \'Entrega\', Col4 \'Producto\', Col5 \'Porciones\', ' +
-    'sum(Col6) \'Cantidad total\'", 0), ' +
+    '=IFERROR(QUERY(' + SHEET_ITEMS + '!A:H, "select A, D, E, sum(F) ' +
+    'where H = \'Abonado\' group by A, D, E order by A ' +
+    'label A \'Entrega\', D \'Producto\', E \'Porciones\', sum(F) \'Cantidad total\'", 1), ' +
     '"Aún no hay pedidos abonados.")');
   p.setFrozenRows(3);
 }
