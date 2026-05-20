@@ -917,6 +917,9 @@
      V2 — Categorías, "Agregar al carrito" y carrito
      ============================================ -->
 <style>
+  /* El atributo hidden debe ganar sobre display:grid/flex de clases */
+  [hidden]{ display: none !important; }
+
   /* --- Tarjetas de categoría --- */
   .cat-cards{
     max-width: 1320px; margin: 0 auto;
@@ -1015,14 +1018,14 @@
   .cart-overlay{
     position: fixed; inset: 0; background: rgba(45,58,31,0.45);
     opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease;
-    z-index: 60;
+    z-index: 200;
   }
   .cart-overlay.open{ opacity: 1; visibility: visible; }
   .cart-drawer{
     position: fixed; top: 0; right: 0; bottom: 0;
     width: min(420px, 90vw);
     background: var(--crema-claro);
-    z-index: 70;
+    z-index: 210;
     transform: translateX(100%);
     transition: transform .35s cubic-bezier(.22,.9,.3,1);
     display: flex; flex-direction: column;
@@ -1109,7 +1112,7 @@
     position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(20px);
     background: var(--verde-profundo); color: var(--crema);
     padding: 0.8rem 1.4rem; border-radius: var(--radius-pill);
-    font-size: 0.9rem; font-weight: 500; z-index: 80;
+    font-size: 0.9rem; font-weight: 500; z-index: 300;
     box-shadow: var(--shadow-lg); opacity: 0; pointer-events: none;
     transition: opacity .3s ease, transform .3s ease; font-family: var(--body-font);
   }
@@ -1121,6 +1124,172 @@
   @media (max-width: 600px){
     .cat-cards{ grid-template-columns: 1fr; }
     .cart-float{ bottom: 5.8rem; }
+  }
+
+  /* --- Etiqueta oscura (mejor contraste para Sin azúcar / Sin lactosa) --- */
+  .producto-badge.badge-dark, .bs-badge.badge-dark, .flavor-tag.badge-dark{
+    background: var(--verde-profundo);
+    color: var(--crema);
+  }
+
+  /* --- Tortas: intro + subgrupos + tarjetas de sabor --- */
+  .tortas-intro{
+    max-width: 1320px; margin: 0 auto 2rem;
+    background: var(--blanco-roto);
+    border: 1px dashed var(--verde-suave);
+    border-radius: var(--radius-xl);
+    padding: 1.2rem 1.5rem;
+    display: flex; align-items: center; gap: 0.9rem;
+    color: var(--texto-suave); font-size: 0.95rem;
+  }
+  .tortas-intro strong{ color: var(--verde-profundo); font-weight: 600; }
+  .tortas-intro .ti-emoji{ font-size: 1.6rem; }
+
+  .tortas-grupo{ max-width: 1320px; margin: 0 auto 2.5rem; }
+  .tortas-grupo-titulo{
+    display: flex; align-items: center; gap: 0.7rem;
+    font-family: var(--display-serif); font-size: 1.5rem; font-weight: 600;
+    color: var(--verde-profundo); margin-bottom: 1.2rem;
+  }
+  .tortas-grupo-titulo .pill{
+    font-family: var(--body-font); font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 0.25rem 0.7rem; border-radius: var(--radius-pill);
+    background: var(--verde-profundo); color: var(--crema);
+  }
+  .tortas-grupo-titulo .pill.sa{ background: var(--acento); color: var(--verde-profundo); }
+
+  .flavor-grid{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .flavor-card{
+    background: var(--blanco-roto);
+    border: 1px solid rgba(45,58,31,0.06);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    transition: transform .3s ease, box-shadow .3s ease;
+  }
+  .flavor-card:hover{ transform: translateY(-4px); box-shadow: var(--shadow-md); }
+  .flavor-card-img{
+    aspect-ratio: 16/9;
+    background: linear-gradient(135deg, var(--verde-claro), var(--verde-medio));
+    position: relative; display: flex; align-items: center; justify-content: center;
+  }
+  .flavor-card-emoji{ font-size: 3rem; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.25)); }
+  .flavor-tag{
+    position: absolute; top: 0.8rem; right: 0.8rem;
+    background: var(--crema); color: var(--verde-oscuro);
+    padding: 0.3rem 0.75rem; border-radius: var(--radius-lg);
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.04em;
+  }
+  .flavor-info{ padding: 1.2rem; display: flex; flex-direction: column; gap: 0.4rem; flex: 1; }
+  .flavor-nombre{ font-family: var(--display-serif); font-size: 1.25rem; font-weight: 600; color: var(--verde-profundo); line-height: 1.15; }
+  .flavor-desc{ font-size: 0.82rem; color: var(--texto-suave); line-height: 1.5; flex: 1; }
+  .flavor-foot{ display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; margin-top: 0.6rem; padding-top: 0.9rem; border-top: 1px dashed rgba(45,58,31,0.12); }
+  .flavor-desde{ font-size: 0.74rem; color: var(--texto-suave); }
+  .flavor-desde b{ font-family: var(--display-serif); font-size: 1.2rem; color: var(--verde-profundo); display: block; }
+  .flavor-btn{
+    background: var(--verde-profundo); color: var(--crema); border: none;
+    padding: 0.6rem 1rem; border-radius: var(--radius-pill);
+    font-family: var(--body-font); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.02em;
+    cursor: pointer; transition: all .2s ease; white-space: nowrap;
+  }
+  .flavor-btn:hover{ background: var(--verde-oscuro); transform: scale(1.04); }
+
+  /* --- Modal configurador --- */
+  .cfg-overlay{
+    position: fixed; inset: 0; background: rgba(45,58,31,0.5);
+    opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease;
+    z-index: 220;
+  }
+  .cfg-overlay.open{ opacity: 1; visibility: visible; }
+  .cfg-modal{
+    position: fixed; z-index: 230;
+    top: 50%; left: 50%; transform: translate(-50%, -48%) scale(.98);
+    width: min(540px, 94vw); max-height: 90vh; overflow-y: auto;
+    background: var(--crema-claro); border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    opacity: 0; visibility: hidden;
+    transition: opacity .3s ease, transform .3s ease, visibility .3s ease;
+  }
+  .cfg-modal.open{ opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
+  .cfg-head{
+    display: flex; align-items: center; gap: 0.8rem;
+    padding: 1.3rem 1.5rem; border-bottom: 1px solid rgba(45,58,31,0.08);
+    position: sticky; top: 0; background: var(--crema-claro); z-index: 1;
+  }
+  .cfg-head .cfg-emoji{
+    width: 48px; height: 48px; border-radius: 14px; flex: none;
+    background: linear-gradient(135deg, var(--verde-claro), var(--verde-medio));
+    display: flex; align-items: center; justify-content: center; font-size: 1.6rem;
+  }
+  .cfg-head h3{ font-family: var(--display-serif); font-size: 1.4rem; font-weight: 600; color: var(--verde-profundo); line-height: 1.1; flex: 1; }
+  .cfg-head .cfg-azucar{ font-size: 0.76rem; color: var(--texto-suave); }
+  .cfg-close{
+    background: none; border: none; cursor: pointer; font-size: 1.2rem;
+    color: var(--verde-profundo); width: 36px; height: 36px; border-radius: 50%;
+    transition: background .2s ease; flex: none;
+  }
+  .cfg-close:hover{ background: rgba(45,58,31,0.08); }
+  .cfg-body{ padding: 1.3rem 1.5rem; display: flex; flex-direction: column; gap: 1.4rem; }
+  .cfg-group > label.cfg-label,
+  .cfg-label{ display: block; font-weight: 600; color: var(--verde-profundo); font-size: 0.92rem; margin-bottom: 0.6rem; }
+  .cfg-label .req{ color: var(--texto-suave); font-weight: 400; font-size: 0.8rem; }
+
+  .size-chips{ display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .size-chip{
+    border: 1px solid var(--verde-suave); background: transparent; color: var(--verde-oscuro);
+    border-radius: var(--radius-pill); padding: 0.5rem 0.9rem; cursor: pointer;
+    font-family: var(--body-font); font-size: 0.85rem; font-weight: 500; transition: all .2s ease;
+    display: flex; flex-direction: column; align-items: center; line-height: 1.1; min-width: 64px;
+  }
+  .size-chip small{ font-size: 0.68rem; color: var(--texto-suave); margin-top: 2px; }
+  .size-chip:hover{ border-color: var(--verde-medio); }
+  .size-chip.sel{ background: var(--verde-profundo); color: var(--crema); border-color: var(--verde-profundo); }
+  .size-chip.sel small{ color: rgba(253,251,244,0.8); }
+
+  .cfg-select, .cfg-input{
+    width: 100%; padding: 0.7rem 0.9rem; border-radius: var(--radius-md);
+    border: 1px solid var(--verde-suave); background: var(--blanco-roto);
+    font-family: var(--body-font); font-size: 0.9rem; color: var(--verde-profundo);
+  }
+  .cfg-select:focus, .cfg-input:focus{ outline: 2px solid var(--verde-suave); }
+
+  .cfg-check{ display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer; }
+  .cfg-check input{ width: 18px; height: 18px; margin-top: 2px; accent-color: var(--verde-profundo); flex: none; cursor: pointer; }
+  .cfg-check .cfg-check-text{ font-size: 0.9rem; color: var(--verde-profundo); line-height: 1.4; }
+  .cfg-check .cfg-check-text small{ display: block; color: var(--texto-suave); font-size: 0.78rem; }
+
+  .cfg-sub{
+    margin-top: 0.9rem; padding: 1rem; border-radius: var(--radius-md);
+    background: rgba(138,160,99,0.10); border: 1px solid rgba(138,160,99,0.25);
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+  .cfg-sub[hidden]{ display: none; }
+
+  .cfg-foot{
+    padding: 1.1rem 1.5rem 1.5rem; border-top: 1px solid rgba(45,58,31,0.08);
+    position: sticky; bottom: 0; background: var(--crema);
+  }
+  .cfg-total-row{ display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0.9rem; }
+  .cfg-total-row span:first-child{ color: var(--texto-suave); font-size: 0.9rem; }
+  .cfg-total{ font-family: var(--display-serif); font-size: 1.6rem; font-weight: 700; color: var(--verde-profundo); }
+  .cfg-add{
+    width: 100%; background: var(--verde-profundo); color: var(--crema); border: none;
+    padding: 0.95rem; border-radius: var(--radius-pill);
+    font-family: var(--body-font); font-weight: 600; font-size: 0.98rem; letter-spacing: 0.02em;
+    cursor: pointer; transition: all .25s ease;
+  }
+  .cfg-add:hover{ background: var(--verde-oscuro); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .cfg-precio-nota{ text-align: center; font-size: 0.72rem; color: var(--texto-suave); margin-top: 0.7rem; }
+
+  /* opciones dentro del ítem del carrito */
+  .cart-item-opts{ font-size: 0.74rem; color: var(--verde-medio); margin-top: 0.25rem; line-height: 1.4; }
+
+  @media (max-width: 1100px){
+    .flavor-grid{ grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px){
+    .flavor-grid{ grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -1211,6 +1380,9 @@
         <span id="catProductosCount"></span>
       </div>
     </div>
+    <!-- Tortas: subgrupos con/sin azúcar + configurador por sabor -->
+    <div id="tortasView" hidden></div>
+    <!-- Otras categorías: grilla simple de productos -->
     <div class="productos-grid" id="productosGrid"></div>
   </div>
 </section>
@@ -1356,6 +1528,75 @@
   </div>
 </aside>
 
+<!-- Configurador de torta -->
+<div class="cfg-overlay" id="cfgOverlay"></div>
+<div class="cfg-modal" id="cfgModal" role="dialog" aria-modal="true" aria-label="Personalizar torta">
+  <div class="cfg-head">
+    <div class="cfg-emoji" id="cfgEmoji">🎂</div>
+    <div style="flex:1">
+      <h3 id="cfgNombre">Torta</h3>
+      <div class="cfg-azucar" id="cfgAzucar"></div>
+    </div>
+    <button class="cfg-close" id="cfgClose" aria-label="Cerrar">✕</button>
+  </div>
+  <div class="cfg-body">
+    <div class="cfg-group">
+      <label class="cfg-label">Porciones <span class="req">· elige el tamaño</span></label>
+      <div class="size-chips" id="cfgSizes"></div>
+    </div>
+
+    <div class="cfg-group">
+      <label class="cfg-label" for="cfgDieta">Restricciones alimentarias <span class="req">· para que nadie quede fuera</span></label>
+      <select class="cfg-select" id="cfgDieta">
+        <option value="">Ninguna</option>
+        <option value="Sin lactosa">Sin lactosa</option>
+        <option value="Sin gluten">Sin gluten</option>
+        <option value="Vegana">Vegana</option>
+        <option value="Sin frutos secos">Sin frutos secos</option>
+        <option value="Otra">Otra (especificar)</option>
+      </select>
+      <input class="cfg-input" id="cfgDietaOtra" type="text" placeholder="Cuéntanos tu restricción" hidden style="margin-top:0.6rem">
+    </div>
+
+    <div class="cfg-group">
+      <label class="cfg-check">
+        <input type="checkbox" id="cfgPersonalizar">
+        <span class="cfg-check-text">Quiero diseño personalizado para una ocasión especial
+          <small>Misma torta de la carta, decorada a tu medida</small>
+        </span>
+      </label>
+      <div class="cfg-sub" id="cfgPersonalizarSub" hidden>
+        <div>
+          <label class="cfg-label" for="cfgOcasion">¿Qué celebras?</label>
+          <select class="cfg-select" id="cfgOcasion">
+            <option value="Cumpleaños">Cumpleaños</option>
+            <option value="Aniversario">Aniversario</option>
+            <option value="Bautizo">Bautizo</option>
+            <option value="Matrimonio">Matrimonio</option>
+            <option value="Baby shower">Baby shower</option>
+            <option value="Otra">Otra</option>
+          </select>
+        </div>
+        <div>
+          <label class="cfg-check">
+            <input type="checkbox" id="cfgToppers">
+            <span class="cfg-check-text">Incluir toppers en el diseño</span>
+          </label>
+          <input class="cfg-input" id="cfgTematica" type="text" placeholder="Temática de los toppers (ej. Frozen, fútbol, flores...)" hidden style="margin-top:0.6rem">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="cfg-foot">
+    <div class="cfg-total-row">
+      <span>Precio estimado</span>
+      <span class="cfg-total" id="cfgTotal">$0</span>
+    </div>
+    <button class="cfg-add" id="cfgAdd">Agregar al carrito</button>
+    <p class="cfg-precio-nota">Precio referencial. El valor final se confirma por WhatsApp según diseño y porciones.</p>
+  </div>
+</div>
+
 
 <!-- ============================================
      DATA + LÓGICA
@@ -1451,12 +1692,29 @@ const CATEGORIAS = [
   {cat:'Antojitos',     emoji:'🍪', label:'Antojitos dulces'},
 ];
 
-function productosDe(cat){
-  const lista = productos.filter(p => p.cat === cat);
-  // Las tortas se ordenan por porciones (de menor a mayor)
-  if(cat === 'Tortas') lista.sort((a,b) => a.porciones - b.porciones);
-  return lista;
-}
+// === TORTAS: catálogo de sabores. Edita los precios por tamaño (CLP) aquí abajo ===
+const TORTAS = [
+  {id:'caluga', nombre:"Torta Caluga", emoji:'🍰', azucar:true, etiqueta:"Especial", desc:"Hojarasca crujiente con sedosa crema de caluga casera, frambuesas, toffee y nueces.", precios:{'4':21300, '10':28700, '15':34900, '20':41055, '30':53400, '40':65700}},
+  {id:'selva-negra', nombre:"Torta Selva Negra", emoji:'🍫', azucar:true, etiqueta:"", desc:"Bizcocho de chocolate extra húmedo con almíbar, chantillí y mermelada de frambuesas.", precios:{'4':16400, '10':14875, '15':26000, '20':30400, '30':39100, '40':47900}},
+  {id:'red-velvet', nombre:"Torta Red Velvet", emoji:'❤️', azucar:true, etiqueta:"Top", desc:"Bizcocho aterciopelado carmín con cacao, frosting de queso crema y migas de red velvet.", precios:{'4':20400, '10':27500, '15':33400, '20':39270, '30':51100, '40':62800}},
+  {id:'carrot', nombre:"Carrot Cake", emoji:'🥕', azucar:true, etiqueta:"", desc:"Bizcocho especiado con zanahoria y nueces, frosting de queso crema, naranja y canela.", precios:{'4':23324, '10':33200, '15':38700, '20':44300, '30':55335, '40':66400}},
+  {id:'mami-gina', nombre:"Torta Mami Gina", emoji:'🎂', azucar:true, etiqueta:"", desc:"Receta familiar clásica de sabor tradicional chileno que conquista a todos.", precios:{'4':11100, '10':15000, '15':18200, '20':21420, '30':27800, '40':34300}},
+  {id:'azul-manjar-durazno', nombre:"Azul Manjar y Durazno", emoji:'🍑', azucar:true, etiqueta:"", desc:"Bizcocho con manjar y durazno y decoración azul elegante para ocasiones especiales.", precios:{'4':13600, '10':18300, '15':22300, '20':26180, '30':34000, '40':41900}},
+  {id:'manjar-durazno', nombre:"Manjar Durazno", emoji:'🍑', azucar:true, etiqueta:"", desc:"Clásica combinación de manjar artesanal con duraznos en almíbar. Un imperdible chileno.", precios:{'4':13600, '10':18300, '15':22300, '20':26180, '30':34000, '40':41900}},
+  {id:'matilda', nombre:"Torta Matilda", emoji:'🎂', azucar:true, etiqueta:"", desc:"Receta familiar versátil de chocolate, perfecta para cualquier celebración.", precios:{'4':11100, '10':15000, '15':18200, '20':21420, '30':27800, '40':60690}},
+  {id:'hojarasca-manjar', nombre:"Hojarasca Manjar", emoji:'🥮', azucar:true, etiqueta:"", desc:"Capas de hojarasca crujiente con manjar artesanal. Clásico chileno por excelencia.", precios:{'4':14500, '10':18700, '15':22200, '20':25700, '30':32700, '40':39700}},
+  {id:'panqueque-naranja', nombre:"Panqueque Naranja", emoji:'🍊', azucar:true, etiqueta:"", desc:"Delgadas capas de panqueque con crema de naranja natural y glaseado cítrico brillante.", precios:{'4':21200, '10':27400, '15':32600, '20':37700, '30':48000, '40':58300}},
+  {id:'panqueque-choco-naranja', nombre:"Panqueque Choco-Naranja", emoji:'🍫', azucar:true, etiqueta:"", desc:"Capas de panqueque con chocolate y naranja. Combinación irresistible.", precios:{'4':23300, '10':30100, '15':35700, '20':41400, '30':52600, '40':63900}},
+  {id:'harry-potter', nombre:"Torta Harry Potter", emoji:'⚡', azucar:true, etiqueta:"Temática", desc:"Diseño temático Harry Potter, personalizable para fans del mundo mágico.", precios:{'4':13600, '10':18300, '15':22300, '20':26180, '30':34000, '40':41900}},
+  {id:'roblox', nombre:"Torta Roblox", emoji:'🎮', azucar:true, etiqueta:"Temática", desc:"Diseño temático Roblox, perfecta para cumpleaños infantiles.", precios:{'4':10500, '10':14200, '15':17200, '20':20230, '30':26300, '40':32400}},
+  {id:'barbara', nombre:"Torta Bárbara", emoji:'🎂', azucar:true, etiqueta:"Sin lactosa", desc:"Especialmente formulada sin lactosa, sin perder textura ni sabor.", precios:{'4':15800, '10':21200, '15':25800, '20':30345, '30':39400, '40':48600}},
+  {id:'carrot-sa', nombre:"Carrot Cake sin azúcar", emoji:'🥕', azucar:false, etiqueta:"", desc:"Versión sin azúcar del Carrot Cake, manteniendo toda su humedad y sabor.", precios:{'4':27132, '10':38900, '15':45400, '20':51900, '30':64855, '40':77800}},
+  {id:'frambuesa-sa', nombre:"Frambuesa sin azúcar", emoji:'🫐', azucar:false, etiqueta:"", desc:"Torta sin azúcar con frambuesas frescas. Ideal para quienes cuidan su alimentación.", precios:{'4':15800, '10':21200, '15':25800, '20':30345, '30':39400, '40':48600}},
+  {id:'hojarasca-sa', nombre:"Hojarasca sin azúcar", emoji:'🥮', azucar:false, etiqueta:"", desc:"Versión sin azúcar de la hojarasca con manjar, manteniendo el sabor tradicional.", precios:{'4':14161, '10':20900, '15':24900, '20':28800, '30':36700, '40':44500}},
+  {id:'manjar-crema-sa', nombre:"Manjar-Crema Pastelera sin azúcar", emoji:'🍮', azucar:false, etiqueta:"", desc:"Combinación de manjar y crema pastelera, sin azúcar añadida.", precios:{'4':9877, '10':15000, '15':18200, '20':21420, '30':27800, '40':34300}},
+];
+
+const TORTA_SIZES = [4,10,15,20,30,40];
 
 function renderBestSellers(){
   const grid = document.getElementById('bestSellersGrid');
@@ -1485,10 +1743,11 @@ function renderBestSellers(){
 }
 
 function productoCardHTML(p){
+  const badgeDark = p.badge && /azúcar|lactosa|gluten/i.test(p.badge) ? ' badge-dark' : '';
   return `
     <article class="producto-card">
       <div class="producto-imagen">
-        ${p.badge ? `<span class="producto-badge">${p.badge}</span>` : ''}
+        ${p.badge ? `<span class="producto-badge${badgeDark}">${p.badge}</span>` : ''}
         <div class="producto-emoji">${p.emoji}</div>
       </div>
       <div class="producto-info">
@@ -1506,10 +1765,14 @@ function productoCardHTML(p){
     </article>`;
 }
 
+function countCategoria(cat){
+  return cat === 'Tortas' ? TORTAS.length : productos.filter(p => p.cat === cat).length;
+}
+
 function renderCategorias(){
   const cont = document.getElementById('catCards');
   cont.innerHTML = CATEGORIAS.map(c => {
-    const n = productos.filter(p => p.cat === c.cat).length;
+    const n = countCategoria(c.cat);
     return `
       <button class="cat-card" data-cat="${c.cat}">
         <span class="cat-card-emoji">${c.emoji}</span>
@@ -1525,14 +1788,25 @@ function renderCategorias(){
 
 function abrirCategoria(cat){
   const meta = CATEGORIAS.find(c => c.cat === cat);
-  const lista = productosDe(cat);
   document.getElementById('catProductosNombre').textContent = meta ? meta.label : cat;
-  document.getElementById('catProductosCount').textContent =
-    `${lista.length} ${lista.length===1?'producto':'productos'}` + (cat==='Tortas' ? ' · ordenadas por porciones' : '');
-  document.getElementById('productosGrid').innerHTML = lista.map(productoCardHTML).join('');
+  const tortasView = document.getElementById('tortasView');
+  const grid = document.getElementById('productosGrid');
+
+  if(cat === 'Tortas'){
+    document.getElementById('catProductosCount').textContent = `${TORTAS.length} sabores · elige tamaño y personaliza`;
+    renderTortas();
+    tortasView.hidden = false;
+    grid.hidden = true;
+  } else {
+    const lista = productos.filter(p => p.cat === cat);
+    document.getElementById('catProductosCount').textContent = `${lista.length} ${lista.length===1?'producto':'productos'}`;
+    grid.innerHTML = lista.map(productoCardHTML).join('');
+    tortasView.hidden = true;
+    grid.hidden = false;
+    bindAgregar();
+  }
   document.getElementById('catCards').hidden = true;
   document.getElementById('catProductos').hidden = false;
-  bindAgregar();
   document.getElementById('catalogo').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
@@ -1540,6 +1814,140 @@ function volverCategorias(){
   document.getElementById('catProductos').hidden = true;
   document.getElementById('catCards').hidden = false;
   document.getElementById('catalogo').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ----- Tortas: subgrupos + tarjetas de sabor -----
+function tortaPrecioMin(t){ return Math.min(...TORTA_SIZES.map(s => t.precios[String(s)])); }
+
+function flavorCardHTML(t){
+  const etq = t.etiqueta
+    ? `<span class="flavor-tag${/azúcar|lactosa|gluten/i.test(t.etiqueta) ? ' badge-dark' : ''}">${t.etiqueta}</span>`
+    : '';
+  return `
+    <article class="flavor-card">
+      <div class="flavor-card-img">
+        ${etq}
+        <span class="flavor-card-emoji">${t.emoji}</span>
+      </div>
+      <div class="flavor-info">
+        <h3 class="flavor-nombre">${t.nombre}</h3>
+        <p class="flavor-desc">${t.desc}</p>
+        <div class="flavor-foot">
+          <span class="flavor-desde">desde<b>${precioFmt(tortaPrecioMin(t))}</b></span>
+          <button class="flavor-btn" data-flavor="${t.id}">Elegir tamaño →</button>
+        </div>
+      </div>
+    </article>`;
+}
+
+function renderTortas(){
+  const cont = document.getElementById('tortasView');
+  const conAzucar = TORTAS.filter(t => t.azucar);
+  const sinAzucar = TORTAS.filter(t => !t.azucar);
+  const grupo = (titulo, pillClase, lista) => `
+    <div class="tortas-grupo">
+      <div class="tortas-grupo-titulo">${titulo} <span class="pill ${pillClase}">${lista.length}</span></div>
+      <div class="flavor-grid">${lista.map(flavorCardHTML).join('')}</div>
+    </div>`;
+  cont.innerHTML = `
+    <div class="tortas-intro">
+      <span class="ti-emoji">🎨</span>
+      <span><strong>¿La quieres con diseño personalizado?</strong> Elige tu sabor y el tamaño, y actívalo al pedir: nos cuentas la ocasión, los toppers y cualquier restricción alimentaria.</span>
+    </div>
+    ${grupo('Con azúcar', '', conAzucar)}
+    ${grupo('Sin azúcar', 'sa', sinAzucar)}
+  `;
+  cont.querySelectorAll('.flavor-btn').forEach(btn => {
+    btn.addEventListener('click', () => openConfigurador(btn.dataset.flavor));
+  });
+}
+
+// ----- Configurador de torta -----
+let cfgState = null;
+
+function openConfigurador(flavorId){
+  const t = TORTAS.find(x => x.id === flavorId);
+  if(!t) return;
+  cfgState = { torta: t, size: 20 };
+  document.getElementById('cfgEmoji').textContent = t.emoji;
+  document.getElementById('cfgNombre').textContent = t.nombre;
+  document.getElementById('cfgAzucar').textContent = t.azucar ? 'Versión con azúcar' : 'Versión sin azúcar';
+  document.getElementById('cfgSizes').innerHTML = TORTA_SIZES.map(s =>
+    `<button class="size-chip${s===cfgState.size?' sel':''}" data-size="${s}">${s}p<small>${precioFmt(t.precios[String(s)])}</small></button>`
+  ).join('');
+  document.getElementById('cfgDieta').value = '';
+  document.getElementById('cfgDietaOtra').value = '';
+  document.getElementById('cfgDietaOtra').hidden = true;
+  document.getElementById('cfgPersonalizar').checked = false;
+  document.getElementById('cfgPersonalizarSub').hidden = true;
+  document.getElementById('cfgOcasion').value = 'Cumpleaños';
+  document.getElementById('cfgToppers').checked = false;
+  document.getElementById('cfgTematica').hidden = true;
+  document.getElementById('cfgTematica').value = '';
+  cfgUpdateTotal();
+  document.getElementById('cfgOverlay').classList.add('open');
+  document.getElementById('cfgModal').classList.add('open');
+}
+
+function closeConfigurador(){
+  document.getElementById('cfgOverlay').classList.remove('open');
+  document.getElementById('cfgModal').classList.remove('open');
+  cfgState = null;
+}
+
+function cfgUpdateTotal(){
+  if(!cfgState) return;
+  document.getElementById('cfgTotal').textContent = precioFmt(cfgState.torta.precios[String(cfgState.size)]);
+}
+
+function cfgAgregar(){
+  if(!cfgState) return;
+  const t = cfgState.torta;
+  const precio = t.precios[String(cfgState.size)];
+  let dieta = document.getElementById('cfgDieta').value;
+  if(dieta === 'Otra'){
+    const otra = document.getElementById('cfgDietaOtra').value.trim();
+    dieta = otra ? `Otra: ${otra}` : 'Otra';
+  }
+  const personalizado = document.getElementById('cfgPersonalizar').checked;
+  let ocasion = '', toppers = false, tematica = '';
+  if(personalizado){
+    ocasion = document.getElementById('cfgOcasion').value;
+    toppers = document.getElementById('cfgToppers').checked;
+    if(toppers) tematica = document.getElementById('cfgTematica').value.trim();
+  }
+  agregarLinea({
+    id: t.id,
+    nombre: t.nombre,
+    emoji: t.emoji,
+    precio,
+    porciones: cfgState.size,
+    opciones: { dieta, personalizado, ocasion, toppers, tematica }
+  });
+  closeConfigurador();
+  showToast('Torta agregada al carrito 🎂');
+}
+
+function bindConfigurador(){
+  document.getElementById('cfgClose').addEventListener('click', closeConfigurador);
+  document.getElementById('cfgOverlay').addEventListener('click', closeConfigurador);
+  document.getElementById('cfgAdd').addEventListener('click', cfgAgregar);
+  document.getElementById('cfgSizes').addEventListener('click', e => {
+    const chip = e.target.closest('.size-chip');
+    if(!chip || !cfgState) return;
+    cfgState.size = parseInt(chip.dataset.size, 10);
+    document.querySelectorAll('#cfgSizes .size-chip').forEach(c => c.classList.toggle('sel', c === chip));
+    cfgUpdateTotal();
+  });
+  document.getElementById('cfgDieta').addEventListener('change', e => {
+    document.getElementById('cfgDietaOtra').hidden = e.target.value !== 'Otra';
+  });
+  document.getElementById('cfgPersonalizar').addEventListener('change', e => {
+    document.getElementById('cfgPersonalizarSub').hidden = !e.target.checked;
+  });
+  document.getElementById('cfgToppers').addEventListener('change', e => {
+    document.getElementById('cfgTematica').hidden = !e.target.checked;
+  });
 }
 
 function renderResenas(){
@@ -1557,32 +1965,67 @@ function renderResenas(){
 }
 
 // ----- Carrito -----
-let carrito = {};
-try { carrito = JSON.parse(localStorage.getItem('elena_carrito') || '{}') || {}; } catch(e){ carrito = {}; }
+let carrito = [];
+try { const raw = JSON.parse(localStorage.getItem('elena_carrito_v2') || '[]'); if(Array.isArray(raw)) carrito = raw; } catch(e){ carrito = []; }
 
-function guardarCarrito(){ try { localStorage.setItem('elena_carrito', JSON.stringify(carrito)); } catch(e){} }
-function totalItems(){ return Object.values(carrito).reduce((a,b)=>a+b, 0); }
-function totalPrecio(){
-  return Object.entries(carrito).reduce((sum,[id,q]) => {
-    const p = productos.find(x => x.id === id);
-    return sum + (p ? p.precio * q : 0);
-  }, 0);
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function guardarCarrito(){ try { localStorage.setItem('elena_carrito_v2', JSON.stringify(carrito)); } catch(e){} }
+function totalItems(){ return carrito.reduce((a,l)=>a+l.qty, 0); }
+function totalPrecio(){ return carrito.reduce((s,l)=>s + l.precio*l.qty, 0); }
+
+function lineaKey(item){
+  const o = item.opciones || {};
+  return [item.id, item.porciones, o.dieta||'', o.personalizado?1:0, o.ocasion||'', o.toppers?1:0, o.tematica||''].join('|');
 }
 
-function addToCart(id){ carrito[id] = (carrito[id]||0) + 1; guardarCarrito(); renderCart(); showToast('Agregado al carrito 🛒'); }
-function changeQty(id, delta){
-  carrito[id] = (carrito[id]||0) + delta;
-  if(carrito[id] <= 0) delete carrito[id];
+// Agrega una línea de pedido (mezcla duplicados con las mismas opciones)
+function agregarLinea(item){
+  item.qty = 1;
+  item.key = lineaKey(item);
+  const existing = carrito.find(l => l.key === item.key);
+  if(existing) existing.qty += 1;
+  else carrito.push(item);
   guardarCarrito(); renderCart();
 }
-function removeFromCart(id){ delete carrito[id]; guardarCarrito(); renderCart(); }
-function clearCart(){ carrito = {}; guardarCarrito(); renderCart(); }
+
+// Producto simple (best sellers / cheesecakes / pies / antojitos)
+function addToCart(id){
+  const p = productos.find(x => x.id === id);
+  if(!p) return;
+  agregarLinea({ id:p.id, nombre:p.nombre, emoji:p.emoji, precio:p.precio, porciones:p.porciones, opciones:null });
+  showToast('Agregado al carrito 🛒');
+}
+
+function changeQty(idx, delta){
+  const l = carrito[idx];
+  if(!l) return;
+  l.qty += delta;
+  if(l.qty <= 0) carrito.splice(idx, 1);
+  guardarCarrito(); renderCart();
+}
+function removeFromCart(idx){ carrito.splice(idx, 1); guardarCarrito(); renderCart(); }
+function clearCart(){ carrito = []; guardarCarrito(); renderCart(); }
+
+function opcionesTexto(o){
+  if(!o) return '';
+  const parts = [];
+  if(o.dieta) parts.push(o.dieta);
+  if(o.personalizado){
+    let p = 'Diseño personalizado';
+    if(o.ocasion) p += ' · ' + o.ocasion;
+    if(o.toppers) p += ' · Toppers' + (o.tematica ? ': ' + o.tematica : '');
+    parts.push(p);
+  }
+  return parts.join(' · ');
+}
 
 function waPedidoLink(){
-  const lineas = Object.entries(carrito).map(([id,q]) => {
-    const p = productos.find(x => x.id === id);
-    return p ? `• ${p.nombre} x${q} — ${precioFmt(p.precio*q)}` : '';
-  }).filter(Boolean);
+  const lineas = carrito.map(l => {
+    let s = `• ${l.nombre} (${l.porciones}p) x${l.qty} — ${precioFmt(l.precio*l.qty)}`;
+    const opt = opcionesTexto(l.opciones);
+    if(opt) s += `\n   ↳ ${opt}`;
+    return s;
+  });
   const msg = `Hola Elena Bakery! Quiero hacer este pedido:\n\n${lineas.join('\n')}\n\nTotal estimado: ${precioFmt(totalPrecio())}\n\n¿Cuándo podría tenerlo? Gracias!`;
   return `https://wa.me/${TEL}?text=${encodeURIComponent(msg)}`;
 }
@@ -1596,32 +2039,30 @@ function renderCart(){
 
   const body = document.getElementById('cartBody');
   const send = document.getElementById('cartSend');
-  const ids = Object.keys(carrito);
 
-  if(ids.length === 0){
+  if(carrito.length === 0){
     body.innerHTML = `<div class="cart-empty"><span class="cart-empty-emoji">🧁</span>Tu carrito está vacío.<br>Agrega tus dulces favoritos y arma tu pedido.</div>`;
     send.classList.add('disabled');
     send.removeAttribute('href');
   } else {
-    body.innerHTML = ids.map(id => {
-      const p = productos.find(x => x.id === id);
-      if(!p) return '';
-      const q = carrito[id];
+    body.innerHTML = carrito.map((l, i) => {
+      const opt = opcionesTexto(l.opciones);
       return `
         <div class="cart-item">
-          <div class="cart-item-emoji">${p.emoji}</div>
+          <div class="cart-item-emoji">${l.emoji}</div>
           <div class="cart-item-info">
-            <div class="cart-item-nombre">${p.nombre}</div>
-            <div class="cart-item-sub">${p.porciones} ${p.porciones===1?'porción':'porciones'} · ${precioFmt(p.precio)} c/u</div>
-            <div class="cart-item-precio">${precioFmt(p.precio*q)}</div>
+            <div class="cart-item-nombre">${l.nombre}</div>
+            <div class="cart-item-sub">${l.porciones} ${l.porciones===1?'porción':'porciones'} · ${precioFmt(l.precio)} c/u</div>
+            ${opt ? `<div class="cart-item-opts">${escapeHtml(opt)}</div>` : ''}
+            <div class="cart-item-precio">${precioFmt(l.precio*l.qty)}</div>
           </div>
           <div class="cart-item-right">
             <div class="qty">
-              <button data-act="dec" data-id="${id}" aria-label="Quitar uno">−</button>
-              <span>${q}</span>
-              <button data-act="inc" data-id="${id}" aria-label="Agregar uno">+</button>
+              <button data-act="dec" data-idx="${i}" aria-label="Quitar uno">−</button>
+              <span>${l.qty}</span>
+              <button data-act="inc" data-idx="${i}" aria-label="Agregar uno">+</button>
             </div>
-            <button class="cart-item-remove" data-act="rm" data-id="${id}">Eliminar</button>
+            <button class="cart-item-remove" data-act="rm" data-idx="${i}">Eliminar</button>
           </div>
         </div>`;
     }).join('');
@@ -1675,12 +2116,13 @@ function bindCart(){
   document.getElementById('cartBody').addEventListener('click', e => {
     const b = e.target.closest('button');
     if(!b) return;
-    const { act, id } = b.dataset;
-    if(act === 'inc') changeQty(id, +1);
-    else if(act === 'dec') changeQty(id, -1);
-    else if(act === 'rm') removeFromCart(id);
+    const idx = parseInt(b.dataset.idx, 10);
+    const act = b.dataset.act;
+    if(act === 'inc') changeQty(idx, +1);
+    else if(act === 'dec') changeQty(idx, -1);
+    else if(act === 'rm') removeFromCart(idx);
   });
-  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeCart(); });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape'){ closeCart(); closeConfigurador(); } });
 }
 
 function bindResenas(){
@@ -1722,6 +2164,7 @@ renderCategorias();
 renderResenas();
 bindAgregar();
 bindCart();
+bindConfigurador();
 renderCart();
 bindResenas();
 bindNav();
