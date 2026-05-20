@@ -4,35 +4,31 @@
  * INSTALACIÓN / ACTUALIZACIÓN:
  * 1. En tu Google Sheet: Extensiones > Apps Script. Borra todo y pega ESTO. Guarda (💾).
  * 2. Arriba elige la función "configurar" y pulsa ▶ Ejecutar (autoriza permisos).
- *    Crea/ordena las pestañas: Pedidos, Items, Producción y Resumen.
  * 3. Implementar > Gestionar implementaciones > ✏️ editar >
  *    Versión: "Nueva versión" > Implementar.   (El URL /exec NO cambia.)
  *
  * CÓMO FUNCIONA:
- * - "Pedidos": una fila por pedido. Aquí controlas el ESTADO.
- *      Cuando te paguen el 50%, cambia el Estado a "Abonado".
+ * - "Pedidos": una fila por pedido. Aquí controlas el ESTADO (marcas "Abonado").
  * - "Items": una fila por producto (se llena solo). Es el motor de los cálculos.
- * - "Producción": detalle por ítem de los pedidos ABONADOS (pedidos grandes
- *      quedan ordenados, cada producto en su línea).
- * - "Resumen": CUÁNTO HORNEAR por día y producto (suma cantidades de todos los
- *      pedidos abonados de un mismo día) → para optimizar el bizcocho.
- * - Pedidos no abonados quedan en "Solicitado" y no afectan producción.
+ * - "Producción": detalle por ítem de los pedidos ABONADOS (cada producto en su línea).
+ * - "Resumen": CUÁNTO HORNEAR por día y producto (suma cantidades del mismo día).
+ * El estado se cruza en vivo: al marcar "Abonado" en Pedidos, aparece en las vistas.
  *
- * NOTA: los pedidos hechos ANTES de esta actualización no tienen desglose en
- * "Items", así que no aparecerán en Producción/Resumen. Los nuevos sí.
+ * NOTA: los pedidos hechos ANTES de tener el desglose en "Items" no aparecerán
+ * en Producción/Resumen. Los nuevos sí.
  */
 
 const SHEET_PEDIDOS    = 'Pedidos';
 const SHEET_ITEMS      = 'Items';
-const SHEET_PRODUCCION = 'Producción';   // detalle por ítem (solo abonados)
-const SHEET_RESUMEN    = 'Resumen';      // cuánto hornear por día/producto
+const SHEET_PRODUCCION = 'Producción';
+const SHEET_RESUMEN    = 'Resumen';
 const NUMERO_INICIAL   = 1;
 const ESTADOS = ['Solicitado', 'Abonado', 'Entregado', 'Anulado'];
 
 const HEADER_PEDIDOS = ['N° Pedido', 'Fecha/hora', 'Teléfono', 'Fecha de entrega',
                         'Entrega (orden)', 'Total', 'Abono 50%', 'Detalle', 'Estado'];
 const HEADER_ITEMS   = ['Entrega (orden)', 'Fecha de entrega', 'N° Pedido', 'Producto',
-                        'Porciones', 'Cantidad', 'Opciones', 'Estado'];
+                        'Porciones', 'Cantidad', 'Opciones'];
 
 function doPost(e){
   const lock = LockService.getScriptLock();
@@ -45,31 +41,17 @@ function doPost(e){
     props.setProperty('ultimoNumero', String(numero));
 
     sh.appendRow([
-      numero,
-      new Date(),
-      data.telefono || '',
-      data.fechaEntrega || '',
-      data.fechaEntregaISO || '',
-      data.total || '',
-      data.abono || '',
-      data.detalle || '',
-      'Solicitado'
+      numero, new Date(), data.telefono || '', data.fechaEntrega || '',
+      data.fechaEntregaISO || '', data.total || '', data.abono || '',
+      data.detalle || '', 'Solicitado'
     ]);
 
     const items = obtenerHoja_(SHEET_ITEMS, HEADER_ITEMS);
     (data.items || []).forEach(function(it){
       items.appendRow([
-        data.fechaEntregaISO || '',
-        data.fechaEntrega || '',
-        numero,
-        it.nombre || '',
-        it.porciones || '',
-        it.qty || '',
-        it.opciones || ''
+        data.fechaEntregaISO || '', data.fechaEntrega || '', numero,
+        it.nombre || '', it.porciones || '', it.qty || '', it.opciones || ''
       ]);
-      const r = items.getLastRow();
-      items.getRange(r, 8).setFormula(
-        '=IFERROR(VLOOKUP(C' + r + ', ' + SHEET_PEDIDOS + '!$A:$I, 9, FALSE),"")');
     });
 
     return json({ ok: true, numero: numero });
@@ -91,9 +73,7 @@ function configurar(){
 
   const colEstado = HEADER_PEDIDOS.indexOf('Estado') + 1;
   const regla = SpreadsheetApp.newDataValidation()
-    .requireValueInList(ESTADOS, true)
-    .setAllowInvalid(false)
-    .build();
+    .requireValueInList(ESTADOS, true).setAllowInvalid(false).build();
   sh.getRange(2, colEstado, 2000, 1).setDataValidation(regla);
 
   pintarEstados_(sh, colEstado);
@@ -123,11 +103,16 @@ function pintarEstados_(sh, colEstado){
   const reglas = colores.map(function(c){
     return SpreadsheetApp.newConditionalFormatRule()
       .whenFormulaSatisfied('=$' + letra + '2="' + c[0] + '"')
-      .setBackground(c[1])
-      .setRanges([rango])
-      .build();
+      .setBackground(c[1]).setRanges([rango]).build();
   });
   sh.setConditionalFormatRules(reglas);
+}
+
+// Columna "virtual" de estado: cruza el N° de pedido (Items col C) con el
+// estado en Pedidos. Se calcula en vivo, sin fórmulas por celda en Items.
+function estadoVirtual_(){
+  return 'ARRAYFORMULA(IF(' + SHEET_ITEMS + '!C2:C="","",' +
+         'IFERROR(VLOOKUP(' + SHEET_ITEMS + '!C2:C,' + SHEET_PEDIDOS + '!A:I,9,FALSE),"")))';
 }
 
 function crearProduccion_(){
@@ -138,8 +123,12 @@ function crearProduccion_(){
     .setValue('PEDIDOS A PRODUCIR (solo abonados) — detalle por ítem, se actualiza solo')
     .setFontWeight('bold');
   p.getRange('A3').setFormula(
-    '=IFERROR(QUERY(' + SHEET_ITEMS + '!A:H, "select B, C, D, E, F, G ' +
-    'where H = \'Abonado\' order by A, C", 1), "Aún no hay pedidos abonados.")');
+    '=IFERROR(QUERY({' + SHEET_ITEMS + '!A2:G, ' + estadoVirtual_() + '}, ' +
+    '"select Col2, Col3, Col4, Col5, Col6, Col7 where Col8 = \'Abonado\' ' +
+    'order by Col1, Col3 ' +
+    'label Col2 \'Fecha de entrega\', Col3 \'N° Pedido\', Col4 \'Producto\', ' +
+    'Col5 \'Porciones\', Col6 \'Cantidad\', Col7 \'Opciones\'", 0), ' +
+    '"Aún no hay pedidos abonados.")');
   p.setFrozenRows(3);
 }
 
@@ -151,9 +140,11 @@ function crearResumen_(){
     .setValue('CUÁNTO HORNEAR (solo abonados) — por día y producto, se actualiza solo')
     .setFontWeight('bold');
   p.getRange('A3').setFormula(
-    '=IFERROR(QUERY(' + SHEET_ITEMS + '!A:H, "select A, D, E, sum(F) ' +
-    'where H = \'Abonado\' group by A, D, E order by A ' +
-    'label A \'Entrega\', D \'Producto\', E \'Porciones\', sum(F) \'Cantidad total\'", 1), ' +
+    '=IFERROR(QUERY({' + SHEET_ITEMS + '!A2:G, ' + estadoVirtual_() + '}, ' +
+    '"select Col1, Col4, Col5, sum(Col6) where Col8 = \'Abonado\' ' +
+    'group by Col1, Col4, Col5 order by Col1 ' +
+    'label Col1 \'Entrega\', Col4 \'Producto\', Col5 \'Porciones\', ' +
+    'sum(Col6) \'Cantidad total\'", 0), ' +
     '"Aún no hay pedidos abonados.")');
   p.setFrozenRows(3);
 }
