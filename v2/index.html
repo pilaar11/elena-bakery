@@ -1773,7 +1773,7 @@ function precioFmt(n){ return '$' + n.toLocaleString('es-CL'); }
 //    Solo agrega los días que quieras bloquear o marcar llenos;
 //    el resto queda disponible según las reglas de abajo.
 // ============================================================
-const DISPONIBILIDAD_SHEET_ID = '';          // <-- ID de tu Google Sheet (vacío = usa solo las reglas)
+const DISPONIBILIDAD_SHEET_ID = '1WlZdzFj616e4uyiw0-NY6kVH5tywC73jkzHwQRydi5E';          // <-- ID de tu Google Sheet (vacío = usa solo las reglas)
 const DISPONIBILIDAD_SHEET_NOMBRE = 'Disponibilidad'; // nombre de la pestaña
 const DISPONIBILIDAD_SHEET_URL = '';         // Opcional: si el método anterior no carga, pega aquí
                                              // el link CSV de "Archivo > Compartir > Publicar en la web > CSV".
@@ -1786,7 +1786,7 @@ const ABONO_PCT = 0.5;   // 50% de abono para confirmar el pedido
 
 // Número de pedido correlativo + registro en planilla (Google Apps Script).
 // Pega aquí la URL /exec de tu Web App (vacío = usa un código por fecha/hora).
-const PEDIDOS_ENDPOINT = '';
+const PEDIDOS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxDkzSiSSo6kMSjM-rrbdhAaZwfpRO_gbQTymVzcC26dKPadDn0-Myy9VGfaHrpCwVl/exec';
 
 // ----- Categorías -----
 const CATEGORIAS = [
