@@ -138,8 +138,8 @@ function crearProduccion_(){
     .setValue('PEDIDOS A PRODUCIR (solo abonados) — detalle por ítem, se actualiza solo')
     .setFontWeight('bold');
   p.getRange('A3').setFormula(
-    '=QUERY(' + SHEET_ITEMS + '!A:H, "select B, C, D, E, F, G ' +
-    'where H = \'Abonado\' order by A, C", 1)');
+    '=IFERROR(QUERY(' + SHEET_ITEMS + '!A:H, "select B, C, D, E, F, G ' +
+    'where H = \'Abonado\' order by A, C", 1), "Aún no hay pedidos abonados.")');
   p.setFrozenRows(3);
 }
 
@@ -151,9 +151,10 @@ function crearResumen_(){
     .setValue('CUÁNTO HORNEAR (solo abonados) — por día y producto, se actualiza solo')
     .setFontWeight('bold');
   p.getRange('A3').setFormula(
-    '=QUERY(' + SHEET_ITEMS + '!A:H, "select A, D, E, sum(F) ' +
+    '=IFERROR(QUERY(' + SHEET_ITEMS + '!A:H, "select A, D, E, sum(F) ' +
     'where H = \'Abonado\' group by A, D, E order by A ' +
-    'label A \'Entrega\', D \'Producto\', E \'Porciones\', sum(F) \'Cantidad total\'", 1)');
+    'label A \'Entrega\', D \'Producto\', E \'Porciones\', sum(F) \'Cantidad total\'", 1), ' +
+    '"Aún no hay pedidos abonados.")');
   p.setFrozenRows(3);
 }
 
