@@ -2301,6 +2301,7 @@ async function enviarPedido(){
   const payload = {
     telefono: '+56' + limpiarTel(telActual()),
     fechaEntrega: prettyFecha(fechaSel),
+    fechaEntregaISO: fechaKey(fechaSel),
     total: total,
     abono: Math.round(total * ABONO_PCT),
     detalle: carrito.map(l => {
