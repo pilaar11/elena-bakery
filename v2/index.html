@@ -8,7 +8,7 @@
 <!-- Google Fonts del design system -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500;1,600&family=Caveat:wght@500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500;1,600&family=Caveat:wght@500;600;700&family=Outfit:wght@300;400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
 
 
 
@@ -38,6 +38,7 @@
     --display-serif: 'Cormorant Garamond', Georgia, serif;
     --display-hand: 'Caveat', cursive;
     --body-font: 'Outfit', system-ui, sans-serif;
+    --marca-font: 'Permanent Marker', cursive;   /* logo/portada (estilo marcador) */
 
     /* Animación */
     --anim-speed: 1;
@@ -202,23 +203,23 @@
   }
   .linea-elena{
     display: block;
-    font-family: var(--display-serif);
-    font-weight: 700;
-    font-size: clamp(4.5rem, 11vw, 9rem);
-    letter-spacing: -0.04em;
+    font-family: var(--marca-font);
+    font-weight: 400;
+    font-size: clamp(3.6rem, 9vw, 7.5rem);
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
     color: var(--verde-profundo);
   }
   .linea-bakery{
     display: block;
-    font-family: var(--display-hand);
-    font-weight: 700;
-    font-size: clamp(3.5rem, 8.5vw, 6.5rem);
+    font-family: var(--marca-font);
+    font-weight: 400;
+    font-size: clamp(2.6rem, 6.5vw, 5rem);
     color: var(--verde-medio);
-    margin-top: -0.15em;
+    margin-top: 0.05em;
     margin-left: 1.5em;
     letter-spacing: 0.01em;
-    font-style: italic;
-    transform: rotate(-3deg);
+    transform: rotate(-2deg);
   }
   .ltr{ display: inline-block; will-change: transform, opacity; opacity: 0; }
   .ltr.sp{ width: 0.3em; }
@@ -1368,7 +1369,7 @@
 
     <h1 class="titulo-portada" id="titulo" data-anim="drop">
       <span class="linea-elena" id="lineaElena"></span>
-      <span class="linea-bakery" id="lineaBakery" style="font-family: Garamond"></span>
+      <span class="linea-bakery" id="lineaBakery"></span>
     </h1>
 
     <p class="portada-sub">Tortas, cheesecakes, pies y antojitos preparados a mano con recetas tradicionales y los mejores ingredientes. Hechos especialmente para ti.</p>

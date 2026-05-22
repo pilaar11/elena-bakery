@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elena Bakery — Comparar tipografías</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Gochi+Hand&family=Caveat+Brush&family=Kalam:wght@700&family=Mali:wght@700&family=Sriracha&family=Neucha&family=Patrick+Hand&family=Coming+Soon&family=Shadows+Into+Light+Two&family=Reenie+Beanie&family=Architects+Daughter&display=swap" rel="stylesheet">
+<style>
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ background:#f5f1e3; color:#2d3a1f; font-family:system-ui, sans-serif; padding:2rem 1rem 4rem; }
+  .intro{ max-width:760px; margin:0 auto 2rem; text-align:center; }
+  .intro h1{ font-size:1.4rem; margin-bottom:.6rem; }
+  .intro p{ font-size:.95rem; line-height:1.6; color:#5a6b4a; }
+  .grid{ max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:1.2rem; }
+  .card{
+    background:#8aa063; border-radius:16px; padding:1.6rem 1.8rem;
+    box-shadow:0 8px 20px rgba(45,58,31,.15); position:relative;
+  }
+  .tag{
+    position:absolute; top:.7rem; right:.9rem;
+    background:rgba(0,0,0,.35); color:#fff; font-size:.75rem; font-weight:600;
+    padding:.2rem .6rem; border-radius:999px; letter-spacing:.02em;
+  }
+  .muestra{ color:#111; line-height:.95; }
+  .muestra .e{ display:block; text-transform:uppercase; font-size:clamp(2.6rem,9vw,4rem); }
+  .muestra .b{ display:block; font-size:clamp(1.8rem,6vw,2.8rem); margin-left:1.4em; margin-top:.05em; transform:rotate(-2deg); }
+</style>
+</head>
+<body>
+  <div class="intro">
+    <h1>¿Cuál se parece más a tu logo?</h1>
+    <p>Compara estas opciones con tu imagen y dime el <strong>número</strong> (la etiqueta de la esquina) de la que más se parezca. Esa la dejo fija en la portada.</p>
+  </div>
+  <div class="grid" id="grid"></div>
+<script>
+  const fuentes = [
+    ["1 · Permanent Marker", "'Permanent Marker', cursive"],
+    ["2 · Gochi Hand", "'Gochi Hand', cursive"],
+    ["3 · Caveat Brush", "'Caveat Brush', cursive"],
+    ["4 · Kalam", "'Kalam', cursive"],
+    ["5 · Mali", "'Mali', cursive"],
+    ["6 · Sriracha", "'Sriracha', cursive"],
+    ["7 · Neucha", "'Neucha', cursive"],
+    ["8 · Patrick Hand", "'Patrick Hand', cursive"],
+    ["9 · Coming Soon", "'Coming Soon', cursive"],
+    ["10 · Shadows Into Light Two", "'Shadows Into Light Two', cursive"],
+    ["11 · Architect's Daughter", "'Architects Daughter', cursive"],
+    ["12 · Reenie Beanie", "'Reenie Beanie', cursive"]
+  ];
+  document.getElementById('grid').innerHTML = fuentes.map(function(f){
+    return '<div class="card"><span class="tag">' + f[0] + '</span>' +
+      '<div class="muestra" style="font-family:' + f[1] + '">' +
+      '<span class="e">Elena</span><span class="b">bakery</span></div></div>';
+  }).join('');
+</script>
+</body>
+</html>
