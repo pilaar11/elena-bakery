@@ -8,7 +8,7 @@
 <!-- Google Fonts del design system -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500;1,600&family=Caveat:wght@500;600;700&family=Outfit:wght@300;400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500;1,600&family=Caveat:wght@500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 
 
@@ -16,6 +16,16 @@
   /* ============================================
      TOKENS DEL DESIGN SYSTEM (Elena Bakery)
      ============================================ */
+  @font-face{
+    font-family: 'Oliver';
+    src: url('assets/fonts/OliverRegular.ttf') format('truetype');
+    font-weight: normal; font-style: normal; font-display: swap;
+  }
+  @font-face{
+    font-family: 'FastInMyCar';
+    src: url('assets/fonts/FastInMyCar.ttf') format('truetype');
+    font-weight: normal; font-style: normal; font-display: swap;
+  }
   :root{
     /* Verdes */
     --verde-profundo: #2d3a1f;
@@ -38,7 +48,8 @@
     --display-serif: 'Cormorant Garamond', Georgia, serif;
     --display-hand: 'Caveat', cursive;
     --body-font: 'Outfit', system-ui, sans-serif;
-    --marca-font: 'Permanent Marker', cursive;   /* logo/portada (estilo marcador) */
+    --font-elena: 'Oliver', cursive;        /* "ELENA" en la portada */
+    --font-bakery: 'FastInMyCar', cursive;  /* "bakery" en la portada */
 
     /* Animación */
     --anim-speed: 1;
@@ -203,18 +214,18 @@
   }
   .linea-elena{
     display: block;
-    font-family: var(--marca-font);
+    font-family: var(--font-elena);
     font-weight: 400;
-    font-size: clamp(3.6rem, 9vw, 7.5rem);
+    font-size: clamp(3.8rem, 9.5vw, 8rem);
     text-transform: uppercase;
     letter-spacing: 0.01em;
     color: var(--verde-profundo);
   }
   .linea-bakery{
     display: block;
-    font-family: var(--marca-font);
+    font-family: var(--font-bakery);
     font-weight: 400;
-    font-size: clamp(2.6rem, 6.5vw, 5rem);
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
     color: var(--verde-medio);
     margin-top: 0.05em;
     margin-left: 1.5em;
