@@ -61,6 +61,26 @@
     src: url('assets/fonts/XmasSweaterStitch.otf') format('opentype');
     font-weight: normal; font-style: normal; font-display: swap;
   }
+  @font-face{
+    font-family: 'EnjoyAndRelax';
+    src: url('assets/fonts/EnjoyAndRelax.ttf') format('truetype');
+    font-weight: normal; font-style: normal; font-display: swap;
+  }
+  @font-face{
+    font-family: 'Handwritten';
+    src: url('assets/fonts/Handwritten.ttf') format('truetype');
+    font-weight: normal; font-style: normal; font-display: swap;
+  }
+  @font-face{
+    font-family: 'OwnWritten';
+    src: url('assets/fonts/OwnWritten.ttf') format('truetype');
+    font-weight: normal; font-style: normal; font-display: swap;
+  }
+  @font-face{
+    font-family: 'Rottersand';
+    src: url('assets/fonts/Rottersand.otf') format('opentype');
+    font-weight: normal; font-style: normal; font-display: swap;
+  }
   :root{
     /* Verdes */
     --verde-profundo: #2d3a1f;
@@ -699,7 +719,12 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.15);
   }
   .postit-stars{ font-size: 1.05rem; letter-spacing: 0.15em; color: var(--acento); font-family: var(--body-font); }
-  .postit-quote{ font-family: 'NothingYouCouldDo', cursive; font-size: 1.3rem; line-height: 1.35; flex: 1; }
+  .postit-quote{ font-family: 'EnjoyAndRelax', cursive; font-size: 1.15rem; line-height: 1.35; flex: 1; }
+  /* Alterna las tipografías de las reseñas (pool de 4) */
+  .postit:nth-child(4n+1) .postit-quote{ font-family: 'EnjoyAndRelax', cursive; font-size: 1.15rem; }
+  .postit:nth-child(4n+2) .postit-quote{ font-family: 'Handwritten', cursive; font-size: 1.1rem; }
+  .postit:nth-child(4n+3) .postit-quote{ font-family: 'OwnWritten', cursive; font-size: 1.15rem; }
+  .postit:nth-child(4n)   .postit-quote{ font-family: 'Rottersand', cursive; font-size: 1.05rem; }
   .postit-meta{
     display: flex; flex-direction: column; gap: 0.15rem;
     padding-top: 0.5rem;
