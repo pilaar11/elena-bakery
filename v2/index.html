@@ -41,6 +41,11 @@
     src: url('assets/fonts/ShiningLetter.otf') format('opentype');
     font-weight: normal; font-style: normal; font-display: swap;
   }
+  @font-face{
+    font-family: 'PastryCream';
+    src: url('assets/fonts/PastryCream.otf') format('opentype');
+    font-weight: normal; font-style: normal; font-display: swap;
+  }
   :root{
     /* Verdes */
     --verde-profundo: #2d3a1f;
@@ -456,6 +461,10 @@
     color: var(--verde-medio);
     font-weight: 600;
   }
+  /* Solo el título "Catálogo 2026" */
+  .catalogo-header .seccion-titulo,
+  .catalogo-header .seccion-titulo em{ font-family: 'PastryCream', cursive; }
+  .catalogo-header .seccion-titulo em{ font-style: normal; }
 
   /* ============================================
      BEST SELLERS
