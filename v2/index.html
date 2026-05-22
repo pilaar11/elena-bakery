@@ -50,6 +50,7 @@
     --body-font: 'Outfit', system-ui, sans-serif;
     --font-elena: 'Oliver', cursive;        /* "ELENA" en la portada */
     --font-bakery: 'FastInMyCar', cursive;  /* "bakery" en la portada */
+    --desc-font: Arial, Helvetica, sans-serif;  /* descripciones de productos y secciones */
 
     /* Animación */
     --anim-speed: 1;
@@ -80,6 +81,17 @@
     -webkit-font-smoothing: antialiased;
   }
   ::selection{ background: var(--verde-profundo); color: var(--crema); }
+
+  /* Descripciones (productos y secciones) en Arial */
+  .portada-sub,
+  .bs-sub, .bs-desc,
+  .catalogo-header p,
+  .producto-desc,
+  .resenas-header p,
+  .historia-text p,
+  .flavor-desc{
+    font-family: var(--desc-font);
+  }
 
   /* Sutil textura de papel */
   body::before{
