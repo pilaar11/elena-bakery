@@ -31,6 +31,11 @@
     src: url('assets/fonts/Mathilde.otf') format('opentype');
     font-weight: normal; font-style: normal; font-display: swap;
   }
+  @font-face{
+    font-family: 'WhiteCloth';
+    src: url('assets/fonts/WhiteCloth.otf') format('opentype');
+    font-weight: normal; font-style: normal; font-display: swap;
+  }
   :root{
     /* Verdes */
     --verde-profundo: #2d3a1f;
@@ -663,7 +668,7 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.15);
   }
   .postit-stars{ font-size: 1.05rem; letter-spacing: 0.15em; color: var(--acento); font-family: var(--body-font); }
-  .postit-quote{ font-size: 1.55rem; line-height: 1.25; flex: 1; }
+  .postit-quote{ font-family: 'WhiteCloth', cursive; font-size: 1.7rem; line-height: 1.3; flex: 1; }
   .postit-meta{
     display: flex; flex-direction: column; gap: 0.15rem;
     padding-top: 0.5rem;
