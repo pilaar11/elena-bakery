@@ -10,10 +10,9 @@ insert into storage.buckets (id, name, public)
 values ('productos', 'productos', true)
 on conflict (id) do update set public = true;
 
--- Lectura pública de los archivos del bucket
-drop policy if exists "productos_read" on storage.objects;
-create policy "productos_read" on storage.objects
-  for select using (bucket_id = 'productos');
+-- Nota: al ser bucket público, los archivos se sirven por su URL pública
+-- (/storage/v1/object/public/productos/...) sin necesidad de una política
+-- de SELECT. No agregamos una para evitar que se pueda LISTAR el bucket.
 
 -- Subir / actualizar / borrar: solo administradores
 drop policy if exists "productos_admin_insert" on storage.objects;

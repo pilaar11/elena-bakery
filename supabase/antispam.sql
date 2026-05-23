@@ -118,6 +118,7 @@ create trigger trg_pedido_items_validate
 create or replace function public.clientes_validate()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   if length(coalesce(new.nombre, '')) > 120
@@ -133,6 +134,13 @@ drop trigger if exists trg_clientes_validate on public.clientes;
 create trigger trg_clientes_validate
   before insert on public.clientes
   for each row execute function public.clientes_validate();
+
+-- ----- (2d) Endurecimiento: estas funciones solo deben correr como
+-- triggers. El rol que inserta NO necesita EXECUTE para que el trigger
+-- se dispare, así que las quitamos del API (evita /rest/v1/rpc/...).
+revoke all on function public.pedidos_antispam()      from public, anon, authenticated;
+revoke all on function public.pedido_items_validate() from public, anon, authenticated;
+revoke all on function public.clientes_validate()     from public, anon, authenticated;
 
 -- ============================================================
 -- PASOS EN EL DASHBOARD (para activar la capa 1):

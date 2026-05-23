@@ -41,6 +41,9 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
+-- handle_new_user solo corre como trigger; no debe exponerse vía RPC.
+revoke all on function public.handle_new_user() from public, anon, authenticated;
+
 -- Helper: ¿el usuario actual es admin?
 -- SECURITY DEFINER -> evita recursión de RLS al leer profiles.
 create or replace function public.is_admin()
