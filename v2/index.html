@@ -608,6 +608,8 @@
     border-radius: 200px 200px 20px 20px;
   }
   .producto-emoji{ font-size: 3.5rem; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.25)); }
+  /* Foto del producto (cuando hay imagen_url): cubre el contenedor, detrás del badge/rank */
+  .card-photo{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
   .producto-badge{
     position: absolute; top: 0.9rem; right: 0.9rem;
     background: var(--crema);
@@ -1747,10 +1749,15 @@
 <!-- ============================================
      DATA + LÓGICA
      ============================================ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
 <script>
 const TEL = '56944832160';
 
-const productos = [
+// Catálogo base (respaldo). Al cargar, se reemplaza por los productos
+// vigentes de la base de datos (Supabase). Si la BD no responde, se
+// muestra este respaldo para que la tienda nunca quede vacía.
+let productos = [
   {id:'PROD-012', nombre:'Torta Caluga', cat:'Tortas', porciones:20, precio:41055, emoji:'🍰', desc:'Hojarasca crujiente con sedosa crema de caluga casera. Coronada con frambuesas frescas, toffee y nueces picadas.', badge:'Especial'},
   {id:'PROD-011', nombre:'Torta Selva Negra', cat:'Tortas', porciones:10, precio:14875, emoji:'🍫', desc:'Bizcocho de chocolate extra húmedo con almíbar, capas de chantillí y mermelada de frambuesas.'},
   {id:'PROD-025', nombre:'Selva Negra económica', cat:'Tortas', porciones:22, precio:32130, emoji:'🍫', desc:'Versión grande de nuestra Selva Negra clásica para compartir en familia.'},
@@ -1831,6 +1838,93 @@ function playTitleAnim(){
 function precioFmt(n){ return '$' + n.toLocaleString('es-CL'); }
 
 // ============================================================
+//  SUPABASE: catálogo desde la BD + guardado de pedidos
+// ============================================================
+function sbClient(){
+  try { return window.getSupabase ? window.getSupabase() : null; } catch(e){ return null; }
+}
+
+function mapProducto(r){
+  return {
+    id: r.codigo || r.id,
+    uuid: r.id,
+    nombre: r.nombre,
+    cat: r.categoria,
+    porciones: r.porciones,
+    precio: r.precio,
+    emoji: r.emoji || '🍰',
+    desc: r.descripcion || '',
+    badge: r.badge || undefined,
+    imagen_url: r.imagen_url || '',
+    destacado: !!r.destacado
+  };
+}
+
+// Carga los productos activos desde la BD y re-renderiza. Si falla,
+// se mantiene el catálogo de respaldo ya mostrado.
+async function cargarProductos(){
+  const sb = sbClient();
+  if(!sb) return;
+  try {
+    const { data, error } = await sb
+      .from('productos').select('*').eq('activo', true)
+      .order('orden', { ascending: true });
+    if(error || !Array.isArray(data) || data.length === 0) return;
+    productos = data.map(mapProducto);
+    renderBestSellers();
+    renderCategorias();
+    const cp = document.getElementById('catProductos');
+    const nombre = document.getElementById('catProductosNombre');
+    if(cp && !cp.hidden && nombre){
+      const meta = CATEGORIAS.find(c => c.label === nombre.textContent || c.cat === nombre.textContent);
+      if(meta && meta.cat !== 'Tortas') abrirCategoria(meta.cat);
+    }
+  } catch(e){ /* sin conexión: se usa el respaldo */ }
+}
+
+// Sesión anónima de Supabase (necesaria por RLS para insertar pedidos).
+async function asegurarSesion(){
+  const sb = sbClient();
+  if(!sb) return null;
+  const { data: { session } } = await sb.auth.getSession();
+  if(session) return sb;
+  const opts = (window.CAPTCHA_TOKEN ? { options: { captchaToken: window.CAPTCHA_TOKEN } } : undefined);
+  const { error } = await sb.auth.signInAnonymously(opts);
+  if(error){ console.warn('No se pudo iniciar sesión anónima:', error.message); return null; }
+  return sb;
+}
+
+// Guarda el pedido en la BD (mejor esfuerzo: no bloquea el flujo de WhatsApp).
+async function guardarPedidoSupabase(payload, numero){
+  try {
+    const sb = await asegurarSesion();
+    if(!sb) return;
+    const { data: pedido, error } = await sb.from('pedidos').insert({
+      numero: numero || null,
+      telefono: payload.telefono,
+      fecha_entrega: payload.fechaEntregaISO || null,
+      total: payload.total,
+      abono: payload.abono,
+      estado: 'pendiente',
+      detalle: payload.detalle
+    }).select('id').single();
+    if(error || !pedido){ console.warn('No se guardó el pedido:', error && error.message); return; }
+    const items = (payload.items || []).map(it => ({
+      pedido_id: pedido.id,
+      nombre: it.nombre,
+      porciones: it.porciones || null,
+      qty: it.qty,
+      opciones: it.opciones || null,
+      precio_unit: it.precio_unit || 0
+    }));
+    if(items.length){
+      const { error: e2 } = await sb.from('pedido_items').insert(items);
+      if(e2) console.warn('No se guardaron los ítems:', e2.message);
+    }
+  } catch(e){ console.warn('Error guardando pedido:', e); }
+}
+
+// ============================================================
 //  DISPONIBILIDAD DE PEDIDOS Y ABONO  (edita esta sección)
 // ------------------------------------------------------------
 //  - Reglas globales: anticipación, ventana y días cerrados.
@@ -1890,15 +1984,24 @@ const TORTAS = [
 
 const TORTA_SIZES = [4,10,15,20,30,40];
 
+function bestSellerList(){
+  const dest = productos.filter(p => p.destacado);
+  const list = dest.length
+    ? dest
+    : BEST_SELLER_IDS.map(id => productos.find(p => p.id === id)).filter(Boolean);
+  return list.slice(0, 4);
+}
+
 function renderBestSellers(){
   const grid = document.getElementById('bestSellersGrid');
-  const items = BEST_SELLER_IDS.map(id => productos.find(p => p.id === id)).filter(Boolean);
+  const items = bestSellerList();
   grid.innerHTML = items.map((p, i) => `
     <article class="bs-card">
       <div class="bs-card-img">
+        ${p.imagen_url ? `<img class="card-photo" src="${escapeHtml(p.imagen_url)}" alt="${escapeHtml(p.nombre)}" loading="lazy">` : ''}
         <span class="bs-rank">No. ${i+1}</span>
         ${p.badge ? `<span class="bs-badge">${p.badge}</span>` : ''}
-        <div class="bs-card-emoji">${p.emoji}</div>
+        ${p.imagen_url ? '' : `<div class="bs-card-emoji">${p.emoji}</div>`}
       </div>
       <div class="bs-card-info">
         <div class="bs-cat">${p.cat}</div>
@@ -1921,8 +2024,9 @@ function productoCardHTML(p){
   return `
     <article class="producto-card">
       <div class="producto-imagen">
+        ${p.imagen_url ? `<img class="card-photo" src="${escapeHtml(p.imagen_url)}" alt="${escapeHtml(p.nombre)}" loading="lazy">` : ''}
         ${p.badge ? `<span class="producto-badge${badgeDark}">${p.badge}</span>` : ''}
-        <div class="producto-emoji">${p.emoji}</div>
+        ${p.imagen_url ? '' : `<div class="producto-emoji">${p.emoji}</div>`}
       </div>
       <div class="producto-info">
         <div class="producto-categoria">${p.cat}</div>
@@ -2382,10 +2486,12 @@ async function enviarPedido(){
       nombre: l.nombre,
       porciones: l.porciones,
       qty: l.qty,
+      precio_unit: l.precio,
       opciones: opcionesTexto(l.opciones) || ''
     }))
   };
   const numero = await obtenerNumeroPedido(payload);
+  guardarPedidoSupabase(payload, numero);   // guarda en la BD en segundo plano (mejor esfuerzo)
   const url = waPedidoLink(numero);
   if(win) win.location.href = url;
   else window.location.href = url;
@@ -2595,6 +2701,7 @@ restaurarTel();
 actualizarFechaUI();
 renderCalendario();
 renderCart();
+cargarProductos();
 cargarDisponibilidad();
 bindResenas();
 bindNav();
