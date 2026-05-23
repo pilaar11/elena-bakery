@@ -8,193 +8,49 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --verde-profundo: #2d3a1f;
-    --verde-oscuro: #3d4f29;
-    --verde-medio: #6b8348;
-    --crema: #f5f1e3;
-    --crema-claro: #faf6e8;
-    --crema-oscuro: #ebe4cd;
-    --acento: #c4a87a;
-    --texto: #2d3a1f;
-    --texto-suave: #5a6b4a;
-    --rojo: #b4533f;
-    --display: 'Cormorant Garamond', Georgia, serif;
-    --body: 'Outfit', system-ui, sans-serif;
-    --shadow: 0 10px 30px rgba(45,58,31,.12);
-  }
-  *{ box-sizing: border-box; margin:0; padding:0; }
-  body{
-    font-family: var(--body); color: var(--texto);
-    background: linear-gradient(180deg, var(--crema-claro), var(--crema));
-    min-height: 100vh;
-  }
-  .hidden{ display:none !important; }
-
-  /* ---------- Login ---------- */
-  .login-wrap{ min-height:100vh; display:grid; place-items:center; padding:24px; }
-  .login-card{
-    width:100%; max-width:380px; background: var(--crema-claro);
-    border:1px solid var(--crema-oscuro); border-radius:18px;
-    box-shadow: var(--shadow); padding:36px 30px;
-  }
-  .brand{ text-align:center; margin-bottom:22px; }
-  .brand h1{ font-family: var(--display); font-weight:700; font-size:2rem; color:var(--verde-profundo); line-height:1; }
-  .brand span{ font-size:.78rem; letter-spacing:.18em; text-transform:uppercase; color:var(--acento); }
-  label{ display:block; font-size:.82rem; font-weight:500; color:var(--texto-suave); margin:14px 0 6px; }
-  input{
-    width:100%; padding:12px 14px; border:1px solid var(--crema-oscuro);
-    border-radius:10px; font-family:var(--body); font-size:.95rem; background:#fff; color:var(--texto);
-  }
-  input:focus{ outline:none; border-color:var(--verde-medio); box-shadow:0 0 0 3px rgba(107,131,72,.15); }
-  .btn{
-    width:100%; margin-top:20px; padding:13px; border:none; border-radius:10px;
-    background:var(--verde-profundo); color:var(--crema); font-family:var(--body);
-    font-size:.95rem; font-weight:600; cursor:pointer; transition:background .15s, transform .15s;
-  }
-  .btn:hover{ background:var(--verde-oscuro); transform:translateY(-1px); }
-  .btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
-  .msg{ margin-top:14px; font-size:.85rem; text-align:center; min-height:1.1em; }
-  .msg.error{ color:var(--rojo); }
-  .msg.ok{ color:var(--verde-medio); }
-
-  /* ---------- Shell admin (placeholder Fase 1) ---------- */
-  .topbar{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:16px 24px; background:var(--verde-profundo); color:var(--crema);
-  }
-  .topbar h1{ font-family:var(--display); font-weight:600; font-size:1.4rem; }
-  .topbar .who{ display:flex; align-items:center; gap:14px; font-size:.85rem; }
-  .btn-out{
-    background:transparent; border:1px solid rgba(245,241,227,.4); color:var(--crema);
-    padding:7px 14px; border-radius:8px; cursor:pointer; font-family:var(--body); font-size:.82rem;
-  }
-  .btn-out:hover{ background:rgba(245,241,227,.12); }
-  .panel{ max-width:900px; margin:48px auto; padding:0 24px; }
-  .card{
-    background:var(--crema-claro); border:1px solid var(--crema-oscuro);
-    border-radius:16px; padding:36px; box-shadow:var(--shadow); text-align:center;
-  }
-  .card h2{ font-family:var(--display); font-size:1.8rem; color:var(--verde-profundo); margin-bottom:8px; }
-  .card p{ color:var(--texto-suave); }
-  .badge-soon{
-    display:inline-block; margin-top:18px; padding:6px 14px; border-radius:999px;
-    background:var(--crema-oscuro); color:var(--verde-oscuro); font-size:.8rem; font-weight:500;
-  }
-</style>
+<link rel="stylesheet" href="admin.css">
 </head>
 <body>
 
-  <!-- Vista carga -->
-  <div id="loadingView" class="login-wrap">
-    <p style="color:var(--texto-suave)">Cargando…</p>
-  </div>
+  <!-- Carga -->
+  <div id="loadingView" class="login-wrap"><p class="muted">Cargando…</p></div>
 
-  <!-- Vista login -->
+  <!-- Login -->
   <div id="loginView" class="login-wrap hidden">
     <form class="login-card" id="loginForm" autocomplete="on">
-      <div class="brand">
-        <h1>Elena Bakery</h1>
-        <span>Administración</span>
-      </div>
+      <div class="brand"><h1>Elena Bakery</h1><span>Administración</span></div>
       <label for="email">Correo</label>
       <input id="email" name="email" type="email" required autocomplete="username" placeholder="tucorreo@correo.com">
       <label for="password">Contraseña</label>
       <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="••••••••">
-      <button class="btn" id="loginBtn" type="submit">Ingresar</button>
+      <button class="btn" id="loginBtn" type="submit" style="width:100%;margin-top:20px">Ingresar</button>
       <p class="msg" id="loginMsg"></p>
     </form>
   </div>
 
-  <!-- Vista admin (placeholder Fase 1) -->
-  <div id="adminView" class="hidden">
-    <div class="topbar">
-      <h1>Panel de administración</h1>
-      <div class="who">
-        <span id="whoEmail"></span>
-        <button class="btn-out" id="logoutBtn" type="button">Cerrar sesión</button>
+  <!-- App -->
+  <div id="appView" class="layout hidden">
+    <aside class="sidebar">
+      <div class="logo">Elena Bakery<small>Administración</small></div>
+      <nav class="nav" id="nav">
+        <button data-view="dashboard" class="active"><span class="ico">▦</span> Dashboard</button>
+        <button data-view="pedidos"><span class="ico">▤</span> Pedidos</button>
+        <button data-view="productos"><span class="ico">▣</span> Productos</button>
+        <button data-view="config"><span class="ico">⚙</span> Configuración</button>
+      </nav>
+      <div class="foot">
+        <div id="whoEmail" class="muted"></div>
+        <button class="btn btn-ghost btn-sm" id="logoutBtn" style="color:var(--crema);border-color:rgba(245,241,227,.4)">Cerrar sesión</button>
       </div>
-    </div>
-    <div class="panel">
-      <div class="card">
-        <h2>Sesión iniciada</h2>
-        <p>Autenticación y base de datos configuradas correctamente.</p>
-        <span class="badge-soon">El panel completo se construye en la Fase 2</span>
-      </div>
-    </div>
+    </aside>
+    <main class="main" id="main"></main>
   </div>
+
+  <div id="modalRoot"></div>
+  <div id="toast" class="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../assets/js/supabase-config.js"></script>
-  <script>
-  (function(){
-    const sb = window.getSupabase();
-    const $ = (id) => document.getElementById(id);
-    const views = { loading: $('loadingView'), login: $('loginView'), admin: $('adminView') };
-
-    function show(name){
-      Object.entries(views).forEach(([k, el]) => el.classList.toggle('hidden', k !== name));
-    }
-
-    async function isAdmin(userId){
-      const { data, error } = await sb.from('profiles').select('role').eq('id', userId).single();
-      if (error) return false;
-      return data && data.role === 'admin';
-    }
-
-    // Decide qué vista mostrar según la sesión activa.
-    async function route(){
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session){ show('login'); return; }
-      if (await isAdmin(session.user.id)){
-        $('whoEmail').textContent = session.user.email || '';
-        show('admin');
-      } else {
-        // Usuario válido pero sin permisos de admin: fuera.
-        await sb.auth.signOut();
-        show('login');
-        setMsg('Esta cuenta no tiene permisos de administrador.', 'error');
-      }
-    }
-
-    function setMsg(text, type){
-      const m = $('loginMsg');
-      m.textContent = text || '';
-      m.className = 'msg' + (type ? ' ' + type : '');
-    }
-
-    $('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = $('loginBtn');
-      btn.disabled = true; setMsg('Verificando…');
-      const email = $('email').value.trim();
-      const password = $('password').value;
-      const { data, error } = await sb.auth.signInWithPassword({ email, password });
-      if (error){
-        btn.disabled = false;
-        setMsg('Correo o contraseña incorrectos.', 'error');
-        return;
-      }
-      if (await isAdmin(data.user.id)){
-        setMsg('');
-        $('whoEmail').textContent = data.user.email || '';
-        show('admin');
-      } else {
-        await sb.auth.signOut();
-        setMsg('Esta cuenta no tiene permisos de administrador.', 'error');
-      }
-      btn.disabled = false;
-    });
-
-    $('logoutBtn').addEventListener('click', async () => {
-      await sb.auth.signOut();
-      setMsg(''); $('loginForm').reset();
-      show('login');
-    });
-
-    route();
-  })();
-  </script>
+  <script src="admin.js"></script>
 </body>
 </html>
