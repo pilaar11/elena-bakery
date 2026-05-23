@@ -75,7 +75,7 @@
   });
   function navTo(view) {
     document.querySelectorAll('#nav button').forEach((b) => b.classList.toggle('active', b.dataset.view === view));
-    ({ dashboard: renderDashboard, pedidos: renderPedidos, productos: renderProductos, config: renderConfig }[view] || renderDashboard)();
+    ({ dashboard: renderDashboard, pedidos: renderPedidos, produccion: renderProduccion, productos: renderProductos, config: renderConfig }[view] || renderDashboard)();
   }
   const main = () => $('main');
   const loading = () => { main().innerHTML = '<div class="spinner">Cargando…</div>'; };
@@ -86,7 +86,7 @@
   async function renderDashboard() {
     loading();
     const [pedRes, prodRes] = await Promise.all([
-      sb.from('pedidos').select('id,numero,telefono,total,abono,estado,fecha_entrega,created_at').order('created_at', { ascending: false }).limit(1000),
+      sb.from('pedidos').select('*').order('created_at', { ascending: false }).limit(1000),
       sb.from('productos').select('id,nombre,stock,activo,categoria')
     ]);
     if (pedRes.error || prodRes.error) { return errorBox(pedRes.error || prodRes.error); }
@@ -95,6 +95,7 @@
     const activos = pedidos.filter((p) => p.estado !== 'cancelado');
     const ventas = pedidos.filter((p) => p.estado === 'entregado').reduce((s, p) => s + (p.total || 0), 0);
     const pendientes = pedidos.filter((p) => p.estado === 'pendiente').length;
+    const porAbonar = activos.filter((p) => !p.abono_pagado).length;
     const enProc = pedidos.filter((p) => ['confirmado', 'en_preparacion', 'listo'].includes(p.estado)).length;
     const lowStock = productos.filter((p) => p.activo && (p.stock || 0) <= 3);
     const prodActivos = productos.filter((p) => p.activo).length;
@@ -106,6 +107,7 @@
       <div class="stats">
         <div class="stat"><div class="k">Pedidos totales</div><div class="v">${activos.length}</div><div class="sub">sin contar cancelados</div></div>
         <div class="stat"><div class="k">Pendientes</div><div class="v">${pendientes}</div><div class="sub">${enProc} en proceso</div></div>
+        <div class="stat"><div class="k">Por cobrar abono</div><div class="v">${porAbonar}</div><div class="sub">no entran a producción</div></div>
         <div class="stat"><div class="k">Ventas (entregados)</div><div class="v">${money(ventas)}</div></div>
         <div class="stat"><div class="k">Productos activos</div><div class="v">${prodActivos}</div><div class="sub">${lowStock.length} con stock bajo</div></div>
       </div>
@@ -177,11 +179,14 @@
     });
     $('pedTabla').innerHTML = rows.length ? `<div class="tbl-wrap"><table><thead><tr>
       <th>N°</th><th>Fecha</th><th>Entrega</th><th>Teléfono</th><th class="right">Total</th>
-      <th class="right">Abono</th><th>Estado</th><th></th></tr></thead><tbody>
+      <th class="right">Abono</th><th>Pago</th><th>Estado</th><th></th></tr></thead><tbody>
       ${rows.map((p) => `<tr>
         <td>${esc(p.numero || p.id.slice(0, 8))}</td><td>${fmtDateTime(p.created_at)}</td>
         <td>${fmtDate(p.fecha_entrega)}</td><td>${esc(p.telefono || '—')}</td>
         <td class="right">${money(p.total)}</td><td class="right">${money(p.abono)}</td>
+        <td>${p.abono_pagado
+          ? `<button class="btn btn-sm pago-btn" data-id="${p.id}" data-val="0" style="background:var(--ok)">✓ Abonado</button>`
+          : `<button class="btn btn-sm btn-ghost pago-btn" data-id="${p.id}" data-val="1">Marcar abono</button>`}</td>
         <td><select class="estado-sel" data-id="${p.id}" style="padding:5px 8px;font-size:.82rem">
           ${ESTADOS.map((e) => `<option value="${e}" ${e === p.estado ? 'selected' : ''}>${ESTADO_LABEL[e]}</option>`).join('')}
         </select></td>
@@ -195,6 +200,16 @@
       if (error) return toast('No se pudo actualizar', true);
       const p = _pedidos.find((x) => x.id === id); if (p) p.estado = estado;
       toast('Estado actualizado');
+    }));
+    $('pedTabla').querySelectorAll('.pago-btn').forEach((b) => b.addEventListener('click', async () => {
+      const id = b.dataset.id, val = b.dataset.val === '1';
+      const { error } = await sb.from('pedidos').update({
+        abono_pagado: val, fecha_abono: val ? new Date().toISOString() : null
+      }).eq('id', id);
+      if (error) return toast('No se pudo actualizar', true);
+      const p = _pedidos.find((x) => x.id === id);
+      if (p) { p.abono_pagado = val; p.fecha_abono = val ? new Date().toISOString() : null; }
+      drawPedidos(); toast(val ? 'Abono registrado' : 'Abono quitado');
     }));
     $('pedTabla').querySelectorAll('[data-ver]').forEach((b) =>
       b.addEventListener('click', () => openPedido(b.dataset.ver)));
@@ -215,7 +230,12 @@
         <div><label>Teléfono</label><div>${esc(p.telefono || '—')}</div></div>
         <div><label>Entrega</label><div>${fmtDate(p.fecha_entrega)}</div></div>
         <div><label>Total</label><div>${money(p.total)}</div></div>
-        <div><label>Abono</label><div>${money(p.abono)}</div></div>
+        <div><label>Abono (50%)</label><div>${money(p.abono)}</div></div>
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span class="badge ${p.abono_pagado ? 'b-entregado' : 'b-pendiente'}">${p.abono_pagado ? '✓ Abono recibido' : 'Sin abono'}</span>
+        <button class="btn btn-sm ${p.abono_pagado ? 'btn-ghost' : ''}" id="mPago">${p.abono_pagado ? 'Quitar abono' : 'Marcar abono recibido'}</button>
+        ${p.fecha_abono ? `<span class="field-note">desde ${fmtDateTime(p.fecha_abono)}</span>` : ''}
       </div>
       ${p.detalle ? `<label style="margin-top:14px">Detalle</label><div class="muted">${esc(p.detalle)}</div>` : ''}
       ${p.notas ? `<label style="margin-top:10px">Notas</label><div class="muted">${esc(p.notas)}</div>` : ''}
@@ -240,6 +260,126 @@
       if (error) return toast('No se pudo eliminar', true);
       _pedidos = _pedidos.filter((x) => x.id !== id); closeModal(); drawPedidos(); toast('Pedido eliminado');
     });
+    $('mPago').addEventListener('click', async () => {
+      const val = !p.abono_pagado;
+      const { error } = await sb.from('pedidos').update({
+        abono_pagado: val, fecha_abono: val ? new Date().toISOString() : null
+      }).eq('id', id);
+      if (error) return toast('No se pudo actualizar', true);
+      p.abono_pagado = val; p.fecha_abono = val ? new Date().toISOString() : null;
+      drawPedidos(); openPedido(id); toast(val ? 'Abono registrado' : 'Abono quitado');
+    });
+  }
+
+  // ============================================================
+  // PRODUCCIÓN
+  // ============================================================
+  let _prodMode = 'dia';
+  let _prodAncla = todayISO();
+  function todayISO() { return new Date().toLocaleDateString('en-CA'); }
+  function isoToDate(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }
+  function dateToISO(d) { return d.toLocaleDateString('en-CA'); }
+  function weekRange(iso) {
+    const d = isoToDate(iso), dow = (d.getDay() + 6) % 7;
+    const start = new Date(d); start.setDate(d.getDate() - dow);
+    const end = new Date(start); end.setDate(start.getDate() + 6);
+    return [dateToISO(start), dateToISO(end)];
+  }
+  function capFecha(iso) {
+    return isoToDate(iso).toLocaleDateString('es-CL', { weekday: 'short', day: '2-digit', month: 'short' });
+  }
+  function rangoLabel(start, end) { return start === end ? capFecha(start) : `${capFecha(start)} – ${capFecha(end)}`; }
+
+  async function renderProduccion() {
+    loading();
+    const [start, end] = _prodMode === 'dia' ? [_prodAncla, _prodAncla] : weekRange(_prodAncla);
+    const { data: peds, error } = await sb.from('pedidos').select('*')
+      .gte('fecha_entrega', start).lte('fecha_entrega', end)
+      .order('fecha_entrega', { ascending: true });
+    if (error) return errorBox(error);
+    const activos = (peds || []).filter((p) => !['entregado', 'cancelado'].includes(p.estado));
+    const pagados = activos.filter((p) => p.abono_pagado);
+    const sinAbono = activos.filter((p) => !p.abono_pagado);
+
+    const itemsByPedido = {};
+    let items = [];
+    if (pagados.length) {
+      const { data: its } = await sb.from('pedido_items').select('*').in('pedido_id', pagados.map((p) => p.id));
+      items = its || [];
+      items.forEach((it) => { (itemsByPedido[it.pedido_id] = itemsByPedido[it.pedido_id] || []).push(it); });
+    }
+
+    const agg = {};
+    items.forEach((it) => {
+      const key = (it.nombre || '') + '||' + (it.porciones || '');
+      if (!agg[key]) agg[key] = { nombre: it.nombre, porciones: it.porciones, qty: 0 };
+      agg[key].qty += it.qty || 1;
+    });
+    const aggList = Object.values(agg).sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+
+    const porDia = {};
+    pagados.forEach((p) => { porDia[p.fecha_entrega] = (porDia[p.fecha_entrega] || 0) + 1; });
+
+    main().innerHTML = `
+      <div class="page-head"><h2>Producción</h2>
+        <div class="actions">
+          <input type="date" id="prodFecha" value="${_prodAncla}">
+          <button class="btn btn-sm ${_prodMode === 'dia' ? '' : 'btn-ghost'}" id="modoDia">Día</button>
+          <button class="btn btn-sm ${_prodMode === 'semana' ? '' : 'btn-ghost'}" id="modoSemana">Semana</button>
+        </div>
+      </div>
+      <p class="muted" style="margin:-12px 0 20px">${_prodMode === 'dia' ? 'Día' : 'Semana'}:
+        <strong>${rangoLabel(start, end)}</strong> · ${pagados.length} pedido(s) en producción</p>
+
+      <div class="panel-card">
+        <h3>Para producir</h3>
+        ${aggList.length ? `<div class="tbl-wrap"><table><thead><tr>
+          <th>Producto</th><th class="center">Tamaño</th><th class="right">Cantidad</th></tr></thead><tbody>
+          ${aggList.map((a) => `<tr><td>${esc(a.nombre)}</td><td class="center">${a.porciones ? a.porciones + 'p' : '—'}</td>
+            <td class="right"><strong>${a.qty}</strong></td></tr>`).join('')}</tbody></table></div>
+          <p class="field-note" style="margin-top:10px">El consolidado por <strong>bizcocho base</strong>
+            (agrupar masas compartidas) se agrega en la siguiente fase, con tu archivo de recetas.</p>`
+        : '<div class="empty">No hay pedidos abonados para este período.</div>'}
+      </div>
+
+      ${_prodMode === 'semana' && Object.keys(porDia).length ? `<div class="panel-card"><h3>Carga por día</h3>
+        <div class="stats" style="margin:0">${Object.keys(porDia).sort().map((d) => `
+          <div class="stat"><div class="k">${capFecha(d)}</div><div class="v" style="font-size:1.5rem">${porDia[d]}</div>
+            <div class="sub">pedido(s)</div></div>`).join('')}</div></div>` : ''}
+
+      <div class="panel-card">
+        <h3>Pedidos en producción (abonados)</h3>
+        ${pagados.length ? pagados.map((p) => `
+          <div style="border:1px solid var(--crema-oscuro);border-radius:12px;padding:14px;margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+              <strong>${esc(p.numero || p.id.slice(0, 8))}</strong>
+              <span class="muted">${fmtDate(p.fecha_entrega)} · ${esc(p.telefono || '—')}</span>
+              ${estadoBadge(p.estado)}
+            </div>
+            <ul style="margin:10px 0 0;padding-left:18px">
+              ${(itemsByPedido[p.id] || []).map((it) => `<li>${esc(it.nombre)} ${it.porciones ? `(${it.porciones}p)` : ''} × ${it.qty}
+                ${it.opciones ? `<span class="field-note">— ${esc(it.opciones)}</span>` : ''}</li>`).join('') || '<li class="muted">Sin ítems detallados</li>'}
+            </ul>
+          </div>`).join('')
+        : '<div class="empty">Nada en producción para este período.</div>'}
+      </div>
+
+      ${sinAbono.length ? `<div class="panel-card"><h3>Pendientes de abono (no entran a producción)</h3>
+        <div class="tbl-wrap"><table><thead><tr><th>N°</th><th>Entrega</th><th>Teléfono</th>
+          <th class="right">Abono</th><th></th></tr></thead><tbody>
+          ${sinAbono.map((p) => `<tr><td>${esc(p.numero || p.id.slice(0, 8))}</td><td>${fmtDate(p.fecha_entrega)}</td>
+            <td>${esc(p.telefono || '—')}</td><td class="right">${money(p.abono)}</td>
+            <td><button class="btn btn-sm pago-prod" data-id="${p.id}">Marcar abono</button></td></tr>`).join('')}
+          </tbody></table></div></div>` : ''}`;
+
+    $('prodFecha').addEventListener('change', (e) => { _prodAncla = e.target.value || todayISO(); renderProduccion(); });
+    $('modoDia').addEventListener('click', () => { _prodMode = 'dia'; renderProduccion(); });
+    $('modoSemana').addEventListener('click', () => { _prodMode = 'semana'; renderProduccion(); });
+    main().querySelectorAll('.pago-prod').forEach((b) => b.addEventListener('click', async () => {
+      const { error } = await sb.from('pedidos').update({ abono_pagado: true, fecha_abono: new Date().toISOString() }).eq('id', b.dataset.id);
+      if (error) return toast('No se pudo actualizar', true);
+      toast('Abono registrado'); renderProduccion();
+    }));
   }
 
   // ============================================================
