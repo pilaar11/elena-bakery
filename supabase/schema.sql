@@ -71,6 +71,7 @@ create table if not exists public.productos (
   porciones   integer,
   emoji       text,
   badge       text,
+  base        text,
   imagen_url  text,
   stock       integer not null default 0,
   destacado   boolean not null default false,
@@ -117,6 +118,7 @@ create table if not exists public.pedido_items (
   porciones   integer,
   qty         integer not null default 1,
   opciones    text,
+  base        text,
   precio_unit integer not null default 0
 );
 

@@ -1856,6 +1856,7 @@ function mapProducto(r){
     desc: r.descripcion || '',
     badge: r.badge || undefined,
     imagen_url: r.imagen_url || '',
+    base: r.base || '',
     destacado: !!r.destacado
   };
 }
@@ -1915,6 +1916,7 @@ async function guardarPedidoSupabase(payload, numero){
       porciones: it.porciones || null,
       qty: it.qty,
       opciones: it.opciones || null,
+      base: it.base || null,
       precio_unit: it.precio_unit || 0
     }));
     if(items.length){
@@ -1983,6 +1985,28 @@ const TORTAS = [
 ];
 
 const TORTA_SIZES = [4,10,15,20,30,40];
+
+// Base / masa de cada sabor del configurador (para consolidar producción)
+const BASE_TORTA = {
+  'caluga':'Caluga (sin horno)',
+  'selva-negra':'Bizcocho chocolate',
+  'red-velvet':'Bizcocho red velvet',
+  'carrot':'Bizcocho zanahoria',
+  'mami-gina':'Bizcocho clásico',
+  'azul-manjar-durazno':'Bizcocho clásico',
+  'manjar-durazno':'Bizcocho clásico',
+  'matilda':'Bizcocho Matilda',
+  'hojarasca-manjar':'Hojarasca',
+  'panqueque-naranja':'Panqueque naranja',
+  'panqueque-choco-naranja':'Panqueque chocolate',
+  'harry-potter':'Bizcocho clásico',
+  'roblox':'Bizcocho clásico',
+  'barbara':'Bizcocho clásico',
+  'carrot-sa':'Bizcocho zanahoria s/azúcar',
+  'frambuesa-sa':'Bizcocho clásico s/azúcar',
+  'hojarasca-sa':'Hojarasca',
+  'manjar-crema-sa':'Bizcocho clásico s/azúcar'
+};
 
 function bestSellerList(){
   const dest = productos.filter(p => p.destacado);
@@ -2200,6 +2224,7 @@ function cfgAgregar(){
     emoji: t.emoji,
     precio,
     porciones: cfgState.size,
+    base: BASE_TORTA[t.id] || '',
     opciones: { dieta, personalizado, ocasion, toppers, tematica }
   });
   closeConfigurador();
@@ -2270,7 +2295,7 @@ function agregarLinea(item){
 function addToCart(id){
   const p = productos.find(x => x.id === id);
   if(!p) return;
-  agregarLinea({ id:p.id, nombre:p.nombre, emoji:p.emoji, precio:p.precio, porciones:p.porciones, opciones:null });
+  agregarLinea({ id:p.id, nombre:p.nombre, emoji:p.emoji, precio:p.precio, porciones:p.porciones, base:p.base||'', opciones:null });
   showToast('Agregado al carrito 🛒');
 }
 
@@ -2487,6 +2512,7 @@ async function enviarPedido(){
       porciones: l.porciones,
       qty: l.qty,
       precio_unit: l.precio,
+      base: l.base || '',
       opciones: opcionesTexto(l.opciones) || ''
     }))
   };

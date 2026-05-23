@@ -8,6 +8,13 @@
   const CLP = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 });
   const money = (n) => CLP.format(Number(n) || 0);
   const CATEGORIAS = ['Tortas', 'Cheesecakes', 'Pies y Tartas', 'Antojitos'];
+  const BASES = [
+    'Bizcocho clásico', 'Bizcocho clásico s/azúcar', 'Bizcocho chocolate', 'Bizcocho Matilda',
+    'Bizcocho red velvet', 'Bizcocho zanahoria', 'Bizcocho zanahoria s/azúcar', 'Hojarasca',
+    'Panqueque naranja', 'Panqueque chocolate', 'Caluga (sin horno)', 'Cheesecake (base galleta)',
+    'Masa sablé', 'Masa kuchen', 'Masa choux', 'Masa cinnamon roll', 'Masa galleta (Oreo)',
+    'Masa berlín', 'Masa alfajor', 'Sin masa (galleta comercial)'
+  ];
   const ESTADOS = ['pendiente', 'confirmado', 'en_preparacion', 'listo', 'entregado', 'cancelado'];
   const ESTADO_LABEL = {
     pendiente: 'Pendiente', confirmado: 'Confirmado', en_preparacion: 'En preparación',
@@ -309,6 +316,9 @@
       items.forEach((it) => { (itemsByPedido[it.pedido_id] = itemsByPedido[it.pedido_id] || []).push(it); });
     }
 
+    const { data: prods } = await sb.from('productos').select('nombre,base');
+    const nameBase = {}; (prods || []).forEach((p) => { if (p.nombre) nameBase[p.nombre] = p.base; });
+
     const agg = {};
     items.forEach((it) => {
       const key = (it.nombre || '') + '||' + (it.porciones || '');
@@ -316,6 +326,15 @@
       agg[key].qty += it.qty || 1;
     });
     const aggList = Object.values(agg).sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+
+    const aggBase = {};
+    items.forEach((it) => {
+      const base = it.base || nameBase[it.nombre] || 'Sin clasificar';
+      const key = base + '||' + (it.porciones || '');
+      if (!aggBase[key]) aggBase[key] = { base, porciones: it.porciones, qty: 0 };
+      aggBase[key].qty += it.qty || 1;
+    });
+    const baseList = Object.values(aggBase).sort((a, b) => a.base.localeCompare(b.base) || (a.porciones || 0) - (b.porciones || 0));
 
     const porDia = {};
     pagados.forEach((p) => { porDia[p.fecha_entrega] = (porDia[p.fecha_entrega] || 0) + 1; });
@@ -332,13 +351,21 @@
         <strong>${rangoLabel(start, end)}</strong> · ${pagados.length} pedido(s) en producción</p>
 
       <div class="panel-card">
-        <h3>Para producir</h3>
+        <h3>Bizcochos y masas base a preparar</h3>
+        ${baseList.length ? `<div class="tbl-wrap"><table><thead><tr>
+          <th>Base / masa</th><th class="center">Tamaño</th><th class="right">Cantidad</th></tr></thead><tbody>
+          ${baseList.map((a) => `<tr><td><strong>${esc(a.base)}</strong></td><td class="center">${a.porciones ? a.porciones + 'p' : '—'}</td>
+            <td class="right"><strong>${a.qty}</strong></td></tr>`).join('')}</tbody></table></div>
+          <p class="field-note" style="margin-top:10px">Tortas distintas que comparten base se suman aquí: hornea las bases juntas y cambia relleno/decoración por pedido.</p>`
+        : '<div class="empty">No hay pedidos abonados para este período.</div>'}
+      </div>
+
+      <div class="panel-card">
+        <h3>Detalle por producto</h3>
         ${aggList.length ? `<div class="tbl-wrap"><table><thead><tr>
           <th>Producto</th><th class="center">Tamaño</th><th class="right">Cantidad</th></tr></thead><tbody>
           ${aggList.map((a) => `<tr><td>${esc(a.nombre)}</td><td class="center">${a.porciones ? a.porciones + 'p' : '—'}</td>
-            <td class="right"><strong>${a.qty}</strong></td></tr>`).join('')}</tbody></table></div>
-          <p class="field-note" style="margin-top:10px">El consolidado por <strong>bizcocho base</strong>
-            (agrupar masas compartidas) se agrega en la siguiente fase, con tu archivo de recetas.</p>`
+            <td class="right"><strong>${a.qty}</strong></td></tr>`).join('')}</tbody></table></div>`
         : '<div class="empty">No hay pedidos abonados para este período.</div>'}
       </div>
 
@@ -466,6 +493,11 @@
         <div><label>Orden</label><input id="f_orden" type="number" value="${p.orden ?? 0}"></div>
         <div><label>Emoji</label><input id="f_emoji" value="${esc(p.emoji)}" placeholder="🍰"></div>
         <div><label>Badge</label><input id="f_badge" value="${esc(p.badge)}" placeholder="Top / Especial…"></div>
+        <div style="grid-column:1/-1"><label>Base / masa (producción)</label>
+          <input id="f_base" list="baseList" value="${esc(p.base)}" placeholder="Bizcocho clásico, Hojarasca…">
+          <datalist id="baseList">${BASES.map((b) => `<option value="${b}">`).join('')}</datalist>
+          <div class="field-note">Los productos con la misma base se agrupan en Producción.</div>
+        </div>
         <div style="grid-column:1/-1"><label>Descripción</label><textarea id="f_descripcion">${esc(p.descripcion)}</textarea></div>
         <div style="grid-column:1/-1"><label>Imagen (URL)</label><input id="f_imagen" value="${esc(p.imagen_url)}" placeholder="https://…">
           <div class="field-note">O sube un archivo:</div>
@@ -501,7 +533,7 @@
         nombre, categoria, codigo: nz($('f_codigo').value),
         precio: intOr($('f_precio').value, 0), porciones: $('f_porciones').value === '' ? null : intOr($('f_porciones').value),
         stock: intOr($('f_stock').value, 0), orden: intOr($('f_orden').value, 0),
-        emoji: nz($('f_emoji').value), badge: nz($('f_badge').value),
+        emoji: nz($('f_emoji').value), badge: nz($('f_badge').value), base: nz($('f_base').value),
         descripcion: nz($('f_descripcion').value), imagen_url: nz($('f_imagen').value),
         destacado: $('f_destacado').checked, activo: $('f_activo').checked,
         updated_at: new Date().toISOString()
