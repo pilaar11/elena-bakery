@@ -1,0 +1,12 @@
+# Secretos / entorno local — NUNCA subir al repo
+.env
+.env.local
+.env.*.local
+
+# Dependencias (si se agrega tooling local)
+node_modules/
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+*.log
