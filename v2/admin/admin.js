@@ -336,6 +336,32 @@
     });
     const baseList = Object.values(aggBase).sort((a, b) => a.base.localeCompare(b.base) || (a.porciones || 0) - (b.porciones || 0));
 
+    // Lista de insumos: suma los ingredientes de cada ítem según su receta,
+    // escalando por tamaño (porciones / ref) y cantidad. El envasado (f:1)
+    // no escala por tamaño, solo por cantidad de unidades pedidas.
+    const insumos = {};
+    const sinReceta = [];
+    items.forEach((it) => {
+      const rid = (window.NOMBRE_A_RECETA || {})[it.nombre];
+      const receta = rid && (window.RECETAS || {})[rid];
+      if (!receta) { if (!sinReceta.includes(it.nombre)) sinReceta.push(it.nombre); return; }
+      const escala = (it.porciones && receta.ref) ? it.porciones / receta.ref : 1;
+      const unidades = it.qty || 1;
+      receta.ing.forEach((ing) => {
+        const cant = ing.c * (ing.f ? 1 : escala) * unidades;
+        const key = ing.n + '||' + ing.u;
+        if (!insumos[key]) insumos[key] = { n: ing.n, u: ing.u, c: 0 };
+        insumos[key].c += cant;
+      });
+    });
+    const insumosList = Object.values(insumos).sort((a, b) => a.n.localeCompare(b.n));
+    const fmtCant = (c, u) => {
+      if (u === 'g' && c >= 1000) return (Math.round(c / 100) / 10).toLocaleString('es-CL') + ' kg';
+      if (u === 'ml' && c >= 1000) return (Math.round(c / 100) / 10).toLocaleString('es-CL') + ' L';
+      const v = Math.ceil(c);
+      return v.toLocaleString('es-CL') + ' ' + (u === 'un' ? 'un.' : u === 'paq' ? 'paq.' : u);
+    };
+
     const porDia = {};
     pagados.forEach((p) => { porDia[p.fecha_entrega] = (porDia[p.fecha_entrega] || 0) + 1; });
 
@@ -357,6 +383,19 @@
           ${baseList.map((a) => `<tr><td><strong>${esc(a.base)}</strong></td><td class="center">${a.porciones ? a.porciones + 'p' : '—'}</td>
             <td class="right"><strong>${a.qty}</strong></td></tr>`).join('')}</tbody></table></div>
           <p class="field-note" style="margin-top:10px">Tortas distintas que comparten base se suman aquí: hornea las bases juntas y cambia relleno/decoración por pedido.</p>`
+        : '<div class="empty">No hay pedidos abonados para este período.</div>'}
+      </div>
+
+      <div class="panel-card">
+        <h3>Lista de insumos (compra estimada)</h3>
+        ${insumosList.length ? `<div class="tbl-wrap"><table><thead><tr>
+          <th>Insumo</th><th class="right">Cantidad</th></tr></thead><tbody>
+          ${insumosList.map((i) => `<tr><td>${esc(i.n)}</td>
+            <td class="right"><strong>${fmtCant(i.c, i.u)}</strong></td></tr>`).join('')}</tbody></table></div>
+          <p class="field-note" style="margin-top:10px">Estimado según tus recetas, escalado por tamaño y cantidad.
+            No descuenta lo que ya tengas en despensa.</p>
+          ${sinReceta.length ? `<p class="field-note" style="color:var(--rojo)">Sin receta registrada (no incluidos):
+            ${sinReceta.map(esc).join(', ')}.</p>` : ''}`
         : '<div class="empty">No hay pedidos abonados para este período.</div>'}
       </div>
 
