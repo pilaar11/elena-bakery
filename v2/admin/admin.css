@@ -106,6 +106,22 @@ td.wrap{white-space:normal;min-width:200px}
 .img-prev{width:100%;height:150px;object-fit:cover;border-radius:10px;border:1px solid var(--crema-oscuro);background:#fff;margin-top:8px}
 .field-note{font-size:.76rem;color:var(--texto-suave);margin-top:4px}
 
+/* ---------- Calendario de carga (dashboard) ---------- */
+.carga-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:16px}
+.cal-dow{text-align:center;font-size:.72rem;font-weight:600;color:var(--texto-suave);text-transform:uppercase}
+.cal-c{position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  border-radius:10px;font-size:.88rem;border:1px solid var(--crema-oscuro)}
+.cal-c.empty{border:none}
+.cal-c b{position:absolute;bottom:4px;right:6px;font-size:.66rem;font-weight:700}
+.cal-c.today{outline:2px solid var(--acento);outline-offset:1px}
+.heat0{background:var(--crema-claro);color:var(--texto-suave)}
+.heat1{background:#d6e8cc;color:#2c5a1e}
+.heat2{background:#f0dfae;color:#7a5e1f}
+.heat3{background:#eec5bc;color:#8c3a2a;font-weight:600}
+.carga-leyenda{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;font-size:.78rem;color:var(--texto-suave)}
+.carga-leyenda i{display:inline-block;width:13px;height:13px;border-radius:4px;margin-right:5px;
+  vertical-align:-2px;border:1px solid var(--crema-oscuro)}
+
 .empty{text-align:center;padding:40px;color:var(--texto-suave)}
 .spinner{text-align:center;padding:40px;color:var(--texto-suave)}
 .toast{position:fixed;bottom:22px;right:22px;background:var(--verde-profundo);color:var(--crema);

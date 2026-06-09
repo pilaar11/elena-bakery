@@ -2024,13 +2024,13 @@ function renderBestSellers(){
       <div class="bs-card-img">
         ${p.imagen_url ? `<img class="card-photo" src="${escapeHtml(p.imagen_url)}" alt="${escapeHtml(p.nombre)}" loading="lazy">` : ''}
         <span class="bs-rank">No. ${i+1}</span>
-        ${p.badge ? `<span class="bs-badge">${p.badge}</span>` : ''}
-        ${p.imagen_url ? '' : `<div class="bs-card-emoji">${p.emoji}</div>`}
+        ${p.badge ? `<span class="bs-badge">${escapeHtml(p.badge)}</span>` : ''}
+        ${p.imagen_url ? '' : `<div class="bs-card-emoji">${escapeHtml(p.emoji)}</div>`}
       </div>
       <div class="bs-card-info">
-        <div class="bs-cat">${p.cat}</div>
-        <h3 class="bs-nombre">${p.nombre}</h3>
-        <p class="bs-desc">${p.desc}</p>
+        <div class="bs-cat">${escapeHtml(p.cat)}</div>
+        <h3 class="bs-nombre">${escapeHtml(p.nombre)}</h3>
+        <p class="bs-desc">${escapeHtml(p.desc)}</p>
         <div class="bs-footer">
           <div>
             <div class="bs-precio">${precioFmt(p.precio)}</div>
@@ -2049,13 +2049,13 @@ function productoCardHTML(p){
     <article class="producto-card">
       <div class="producto-imagen">
         ${p.imagen_url ? `<img class="card-photo" src="${escapeHtml(p.imagen_url)}" alt="${escapeHtml(p.nombre)}" loading="lazy">` : ''}
-        ${p.badge ? `<span class="producto-badge${badgeDark}">${p.badge}</span>` : ''}
-        ${p.imagen_url ? '' : `<div class="producto-emoji">${p.emoji}</div>`}
+        ${p.badge ? `<span class="producto-badge${badgeDark}">${escapeHtml(p.badge)}</span>` : ''}
+        ${p.imagen_url ? '' : `<div class="producto-emoji">${escapeHtml(p.emoji)}</div>`}
       </div>
       <div class="producto-info">
-        <div class="producto-categoria">${p.cat}</div>
-        <h3 class="producto-nombre">${p.nombre}</h3>
-        <p class="producto-desc">${p.desc}</p>
+        <div class="producto-categoria">${escapeHtml(p.cat)}</div>
+        <h3 class="producto-nombre">${escapeHtml(p.nombre)}</h3>
+        <p class="producto-desc">${escapeHtml(p.desc)}</p>
         <div class="producto-footer">
           <div>
             <div class="producto-precio">${precioFmt(p.precio)}</div>
@@ -2568,9 +2568,9 @@ function renderCart(){
       const opt = opcionesTexto(l.opciones);
       return `
         <div class="cart-item">
-          <div class="cart-item-emoji">${l.emoji}</div>
+          <div class="cart-item-emoji">${escapeHtml(l.emoji)}</div>
           <div class="cart-item-info">
-            <div class="cart-item-nombre">${l.nombre}</div>
+            <div class="cart-item-nombre">${escapeHtml(l.nombre)}</div>
             <div class="cart-item-sub">${l.porciones} ${l.porciones===1?'porción':'porciones'} · ${precioFmt(l.precio)} c/u</div>
             ${opt ? `<div class="cart-item-opts">${escapeHtml(opt)}</div>` : ''}
             <div class="cart-item-precio">${precioFmt(l.precio*l.qty)}</div>

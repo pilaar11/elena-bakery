@@ -90,6 +90,58 @@
   // ============================================================
   // DASHBOARD
   // ============================================================
+  let _dashPedidos = [];
+  let _cargaRef = new Date();
+  // Umbrales de carga por día (entregas no canceladas)
+  const CARGA = { media: 2, alta: 4 };
+
+  function cargaMesHTML() {
+    const y = _cargaRef.getFullYear(), m = _cargaRef.getMonth();
+    const counts = {};
+    _dashPedidos.forEach((p) => {
+      if (p.fecha_entrega && p.estado !== 'cancelado')
+        counts[p.fecha_entrega] = (counts[p.fecha_entrega] || 0) + 1;
+    });
+    const offset = (new Date(y, m, 1).getDay() + 6) % 7;
+    const dim = new Date(y, m + 1, 0).getDate();
+    const hoy = new Date().toLocaleDateString('en-CA');
+    let cells = '<span class="cal-dow">L</span><span class="cal-dow">M</span><span class="cal-dow">M</span><span class="cal-dow">J</span><span class="cal-dow">V</span><span class="cal-dow">S</span><span class="cal-dow">D</span>';
+    for (let i = 0; i < offset; i++) cells += '<span class="cal-c empty"></span>';
+    for (let d = 1; d <= dim; d++) {
+      const iso = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const n = counts[iso] || 0;
+      const lvl = n === 0 ? 0 : n < CARGA.media ? 1 : n < CARGA.alta ? 2 : 3;
+      cells += `<span class="cal-c heat${lvl}${iso === hoy ? ' today' : ''}" title="${n} entrega(s)">${d}${n ? `<b>${n}</b>` : ''}</span>`;
+    }
+    const label = _cargaRef.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' });
+    return `
+      <div class="panel-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <h3 style="margin:0">Carga de entregas — ${label.charAt(0).toUpperCase() + label.slice(1)}</h3>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" id="cargaPrev">←</button>
+            <button class="btn btn-ghost btn-sm" id="cargaHoy">Hoy</button>
+            <button class="btn btn-ghost btn-sm" id="cargaNext">→</button>
+          </div>
+        </div>
+        <div class="carga-grid">${cells}</div>
+        <div class="carga-leyenda">
+          <span><i class="heat0"></i> Libre</span>
+          <span><i class="heat1"></i> 1 entrega</span>
+          <span><i class="heat2"></i> ${CARGA.media}–${CARGA.alta - 1} entregas</span>
+          <span><i class="heat3"></i> ${CARGA.alta}+ (considera cerrar el día)</span>
+        </div>
+        <p class="field-note">Para cerrar un día y que no se agenden más pedidos, agrégalo en tu planilla
+          de disponibilidad (estado "lleno"); la tienda lo bloquea en el calendario de entrega.</p>
+      </div>`;
+  }
+  function bindCargaMes() {
+    const rerender = () => { $('cargaWrap').innerHTML = cargaMesHTML(); bindCargaMes(); };
+    $('cargaPrev').addEventListener('click', () => { _cargaRef = new Date(_cargaRef.getFullYear(), _cargaRef.getMonth() - 1, 1); rerender(); });
+    $('cargaNext').addEventListener('click', () => { _cargaRef = new Date(_cargaRef.getFullYear(), _cargaRef.getMonth() + 1, 1); rerender(); });
+    $('cargaHoy').addEventListener('click', () => { _cargaRef = new Date(); rerender(); });
+  }
+
   async function renderDashboard() {
     loading();
     const [pedRes, prodRes] = await Promise.all([
@@ -98,6 +150,7 @@
     ]);
     if (pedRes.error || prodRes.error) { return errorBox(pedRes.error || prodRes.error); }
     const pedidos = pedRes.data || [], productos = prodRes.data || [];
+    _dashPedidos = pedidos;
 
     const activos = pedidos.filter((p) => p.estado !== 'cancelado');
     const ventas = pedidos.filter((p) => p.estado === 'entregado').reduce((s, p) => s + (p.total || 0), 0);
@@ -118,6 +171,7 @@
         <div class="stat"><div class="k">Ventas (entregados)</div><div class="v">${money(ventas)}</div></div>
         <div class="stat"><div class="k">Productos activos</div><div class="v">${prodActivos}</div><div class="sub">${lowStock.length} con stock bajo</div></div>
       </div>
+      <div id="cargaWrap">${cargaMesHTML()}</div>
       <div class="panel-card">
         <h3>Pedidos por estado</h3>
         <div class="stats" style="margin:0">
@@ -141,6 +195,7 @@
             <td class="right stock-low">${p.stock || 0}</td></tr>`).join('')}</tbody></table></div>`
         : '<div class="empty">Todo el stock está en orden.</div>'}
       </div>`;
+    bindCargaMes();
   }
   const estadoBadge = (e) => `<span class="badge b-${e}">${ESTADO_LABEL[e] || e}</span>`;
   function errorBox(error) {
