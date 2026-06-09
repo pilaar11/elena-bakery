@@ -92,6 +92,8 @@
   // ============================================================
   let _dashPedidos = [];
   let _cargaRef = new Date();
+  let _diasBloqueados = new Set();
+  let _bloqueosOk = false; // false si falta correr dias_bloqueados.sql
   // Umbrales de carga por día (entregas no canceladas)
   const CARGA = { media: 2, alta: 4 };
 
@@ -111,7 +113,9 @@
       const iso = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const n = counts[iso] || 0;
       const lvl = n === 0 ? 0 : n < CARGA.media ? 1 : n < CARGA.alta ? 2 : 3;
-      cells += `<span class="cal-c heat${lvl}${iso === hoy ? ' today' : ''}" title="${n} entrega(s)">${d}${n ? `<b>${n}</b>` : ''}</span>`;
+      const cerrado = _diasBloqueados.has(iso);
+      cells += `<span class="cal-c heat${lvl}${iso === hoy ? ' today' : ''}${cerrado ? ' cerrado' : ''}" data-dia="${iso}"
+        title="${n} entrega(s)${cerrado ? ' · agenda cerrada' : ''}">${d}${cerrado ? '<span class="cal-lock">🔒</span>' : ''}${n ? `<b>${n}</b>` : ''}</span>`;
     }
     const label = _cargaRef.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' });
     return `
@@ -130,9 +134,11 @@
           <span><i class="heat1"></i> 1 entrega</span>
           <span><i class="heat2"></i> ${CARGA.media}–${CARGA.alta - 1} entregas</span>
           <span><i class="heat3"></i> ${CARGA.alta}+ (considera cerrar el día)</span>
+          <span>🔒 Agenda cerrada</span>
         </div>
-        <p class="field-note">Para cerrar un día y que no se agenden más pedidos, agrégalo en tu planilla
-          de disponibilidad (estado "lleno"); la tienda lo bloquea en el calendario de entrega.</p>
+        <p class="field-note">Haz clic en un día para ver sus pedidos y cerrar o reabrir la agenda.
+          Los días cerrados quedan bloqueados al instante en el calendario de la tienda.
+          ${_bloqueosOk ? '' : '<strong style="color:var(--rojo)">Falta ejecutar supabase/dias_bloqueados.sql para poder cerrar días.</strong>'}</p>
       </div>`;
   }
   function bindCargaMes() {
@@ -140,17 +146,78 @@
     $('cargaPrev').addEventListener('click', () => { _cargaRef = new Date(_cargaRef.getFullYear(), _cargaRef.getMonth() - 1, 1); rerender(); });
     $('cargaNext').addEventListener('click', () => { _cargaRef = new Date(_cargaRef.getFullYear(), _cargaRef.getMonth() + 1, 1); rerender(); });
     $('cargaHoy').addEventListener('click', () => { _cargaRef = new Date(); rerender(); });
+    $('cargaWrap').querySelectorAll('.cal-c[data-dia]').forEach((c) =>
+      c.addEventListener('click', () => openDia(c.dataset.dia)));
+  }
+
+  // Modal del día: pedidos, productos pedidos y cierre/reapertura de agenda
+  async function openDia(iso) {
+    const peds = _dashPedidos.filter((p) => p.fecha_entrega === iso && p.estado !== 'cancelado');
+    const cerrado = _diasBloqueados.has(iso);
+    let items = [];
+    if (peds.length) {
+      const { data } = await sb.from('pedido_items').select('*').in('pedido_id', peds.map((p) => p.id));
+      items = data || [];
+    }
+    const agg = {};
+    items.forEach((it) => {
+      const k = (it.nombre || '') + '||' + (it.porciones || '');
+      if (!agg[k]) agg[k] = { nombre: it.nombre, porciones: it.porciones, qty: 0 };
+      agg[k].qty += it.qty || 1;
+    });
+    const aggL = Object.values(agg).sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+    const label = isoToDate(iso).toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
+
+    openModal(`
+      <h3>${label.charAt(0).toUpperCase() + label.slice(1)}</h3>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px">
+        <span class="badge ${cerrado ? 'b-cancelado' : 'b-entregado'}">${cerrado ? '🔒 Agenda cerrada' : 'Agenda abierta'}</span>
+        <span class="muted">${peds.length} pedido(s) activo(s)</span>
+      </div>
+      <label style="margin-top:16px">Productos pedidos este día</label>
+      ${aggL.length ? `<div class="tbl-wrap"><table><thead><tr><th>Producto</th><th class="center">Tamaño</th>
+        <th class="right">Cant.</th></tr></thead><tbody>
+        ${aggL.map((a) => `<tr><td>${esc(a.nombre)}</td><td class="center">${a.porciones ? a.porciones + 'p' : '—'}</td>
+          <td class="right"><strong>${a.qty}</strong></td></tr>`).join('')}</tbody></table></div>`
+      : '<div class="empty" style="padding:14px">Sin pedidos para esta fecha.</div>'}
+      ${peds.length ? `<label style="margin-top:14px">Pedidos</label>
+      <div class="tbl-wrap"><table><thead><tr><th>N°</th><th>Teléfono</th><th class="right">Total</th>
+        <th>Abono</th><th>Estado</th></tr></thead><tbody>
+        ${peds.map((p) => `<tr><td>${esc(p.numero || p.id.slice(0, 8))}</td><td>${esc(p.telefono || '—')}</td>
+          <td class="right">${money(p.total)}</td>
+          <td>${p.abono_pagado ? '<span class="dot-on">✓</span>' : '<span class="dot-off">✗</span>'}</td>
+          <td>${estadoBadge(p.estado)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+      <div class="actions">
+        <button class="btn btn-ghost" data-close>Cerrar</button>
+        <button class="btn ${cerrado ? '' : 'btn-danger'}" id="diaToggle" ${_bloqueosOk ? '' : 'disabled'}>
+          ${cerrado ? 'Reabrir agenda' : 'Cerrar agenda este día'}</button>
+      </div>
+      ${_bloqueosOk ? '' : '<p class="field-note" style="color:var(--rojo)">Ejecuta supabase/dias_bloqueados.sql para habilitar el cierre de días.</p>'}`);
+
+    $('diaToggle').addEventListener('click', async () => {
+      const res = cerrado
+        ? await sb.from('dias_bloqueados').delete().eq('fecha', iso)
+        : await sb.from('dias_bloqueados').insert({ fecha: iso, motivo: 'Agenda llena' });
+      if (res.error) return toast('No se pudo actualizar: ' + res.error.message, true);
+      if (cerrado) _diasBloqueados.delete(iso); else _diasBloqueados.add(iso);
+      closeModal();
+      $('cargaWrap').innerHTML = cargaMesHTML(); bindCargaMes();
+      toast(cerrado ? 'Agenda reabierta' : 'Día cerrado: la tienda ya no ofrece esa fecha');
+    });
   }
 
   async function renderDashboard() {
     loading();
-    const [pedRes, prodRes] = await Promise.all([
+    const [pedRes, prodRes, diasRes] = await Promise.all([
       sb.from('pedidos').select('*').order('created_at', { ascending: false }).limit(1000),
-      sb.from('productos').select('id,nombre,stock,activo,categoria')
+      sb.from('productos').select('id,nombre,stock,activo,categoria'),
+      sb.from('dias_bloqueados').select('fecha')
     ]);
     if (pedRes.error || prodRes.error) { return errorBox(pedRes.error || prodRes.error); }
     const pedidos = pedRes.data || [], productos = prodRes.data || [];
     _dashPedidos = pedidos;
+    _bloqueosOk = !diasRes.error;
+    _diasBloqueados = new Set((diasRes.data || []).map((r) => r.fecha));
 
     const activos = pedidos.filter((p) => p.estado !== 'cancelado');
     const ventas = pedidos.filter((p) => p.estado === 'entregado').reduce((s, p) => s + (p.total || 0), 0);

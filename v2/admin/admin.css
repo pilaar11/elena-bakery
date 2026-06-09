@@ -114,6 +114,10 @@ td.wrap{white-space:normal;min-width:200px}
 .cal-c.empty{border:none}
 .cal-c b{position:absolute;bottom:4px;right:6px;font-size:.66rem;font-weight:700}
 .cal-c.today{outline:2px solid var(--acento);outline-offset:1px}
+.cal-c[data-dia]{cursor:pointer;transition:transform .1s,box-shadow .1s}
+.cal-c[data-dia]:hover{transform:scale(1.06);box-shadow:var(--shadow-sm);z-index:1}
+.cal-lock{position:absolute;top:2px;left:4px;font-size:.62rem}
+.cal-c.cerrado{opacity:.85;background-image:repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(45,58,31,.07) 5px,rgba(45,58,31,.07) 10px)}
 .heat0{background:var(--crema-claro);color:var(--texto-suave)}
 .heat1{background:#d6e8cc;color:#2c5a1e}
 .heat2{background:#f0dfae;color:#7a5e1f}

@@ -2391,15 +2391,25 @@ async function cargarDisponibilidad(){
     || (DISPONIBILIDAD_SHEET_ID
         ? `https://docs.google.com/spreadsheets/d/${DISPONIBILIDAD_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(DISPONIBILIDAD_SHEET_NOMBRE)}`
         : '');
-  if(!url) return;
+  // 1) Bloqueos desde la planilla de Google (si está configurada)
+  if(url){
+    try{
+      const res = await fetch(url);
+      if(res.ok) parseDisponibilidad(await res.text());
+    } catch(e){ /* sin conexión a la planilla: se usan solo las reglas */ }
+  }
+  // 2) Días cerrados desde el panel de administración (Supabase).
+  //    Se suman a los de la planilla; si la BD no responde, no pasa nada.
   try{
-    const res = await fetch(url);
-    if(!res.ok) return;
-    parseDisponibilidad(await res.text());
-    if(fechaSel && estadoFecha(fechaSel) !== 'disponible'){ fechaSel = null; guardarFecha(); actualizarFechaUI(); }
-    renderCalendario();
-    renderCart();
-  } catch(e){ /* sin conexión a la planilla: se usan solo las reglas */ }
+    const sb = sbClient();
+    if(sb){
+      const { data } = await sb.from('dias_bloqueados').select('fecha,motivo');
+      (data || []).forEach(r => bloqueos.set(r.fecha, { estado:'lleno', nota: r.motivo || 'Día completo' }));
+    }
+  } catch(e){ /* opcional */ }
+  if(fechaSel && estadoFecha(fechaSel) !== 'disponible'){ fechaSel = null; guardarFecha(); actualizarFechaUI(); }
+  renderCalendario();
+  renderCart();
 }
 
 function renderCalendario(){
