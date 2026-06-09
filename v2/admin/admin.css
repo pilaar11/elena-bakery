@@ -114,8 +114,14 @@ td.wrap{white-space:normal;min-width:200px}
 .cal-c.empty{border:none}
 .cal-c b{position:absolute;bottom:4px;right:6px;font-size:.66rem;font-weight:700}
 .cal-c.today{outline:2px solid var(--acento);outline-offset:1px}
-.cal-c[data-dia]{cursor:pointer;transition:transform .1s,box-shadow .1s}
-.cal-c[data-dia]:hover{transform:scale(1.06);box-shadow:var(--shadow-sm);z-index:1}
+.cal-c[data-dia],.cal-c[data-f]{cursor:pointer;transition:transform .1s,box-shadow .1s}
+.cal-c[data-dia]:hover,.cal-c[data-f]:hover{transform:scale(1.06);box-shadow:var(--shadow-sm);z-index:1}
+.cal-c.sel{outline:2px solid var(--verde-profundo);outline-offset:1px;font-weight:700}
+/* Mini calendario dentro del modal de pedido */
+.cal-mini .carga-grid{gap:4px;margin-top:8px}
+.cal-mini .cal-c{aspect-ratio:auto;min-height:34px;border-radius:8px;font-size:.8rem}
+.cal-mini .cal-c b{bottom:2px;right:4px;font-size:.58rem}
+.cal-mini .cal-lock{top:1px;left:3px;font-size:.55rem}
 .cal-lock{position:absolute;top:2px;left:4px;font-size:.62rem}
 .cal-c.cerrado{opacity:.85;background-image:repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(45,58,31,.07) 5px,rgba(45,58,31,.07) 10px)}
 .heat0{background:var(--crema-claro);color:var(--texto-suave)}

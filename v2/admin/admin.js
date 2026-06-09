@@ -372,6 +372,58 @@
     const waLink = waNum.length >= 11
       ? ` <a href="https://wa.me/${waNum}?text=${waMsg}" target="_blank" rel="noopener" style="font-size:.8rem">Coordinar por WhatsApp →</a>`
       : '';
+    // Estado del calendario de reagendamiento
+    let selFecha = p.fecha_entrega || null;
+    let mCalRef = selFecha ? new Date(isoToDate(selFecha).getFullYear(), isoToDate(selFecha).getMonth(), 1)
+                           : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const fechaLarga = (iso) => {
+      if (!iso) return 'Sin fecha';
+      const s = isoToDate(iso).toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    };
+    // Mini calendario con colores de carga (mismos umbrales del dashboard)
+    const mCalHTML = () => {
+      const y = mCalRef.getFullYear(), m = mCalRef.getMonth();
+      const counts = {};
+      _pedidos.forEach((x) => {
+        if (x.id !== id && x.fecha_entrega && x.estado !== 'cancelado')
+          counts[x.fecha_entrega] = (counts[x.fecha_entrega] || 0) + 1;
+      });
+      const offset = (new Date(y, m, 1).getDay() + 6) % 7;
+      const dim = new Date(y, m + 1, 0).getDate();
+      const hoy = todayISO();
+      let cells = '<span class="cal-dow">L</span><span class="cal-dow">M</span><span class="cal-dow">M</span><span class="cal-dow">J</span><span class="cal-dow">V</span><span class="cal-dow">S</span><span class="cal-dow">D</span>';
+      for (let i = 0; i < offset; i++) cells += '<span class="cal-c empty"></span>';
+      for (let d = 1; d <= dim; d++) {
+        const iso = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const n = counts[iso] || 0;
+        const lvl = n === 0 ? 0 : n < CARGA.media ? 1 : n < CARGA.alta ? 2 : 3;
+        const cerrado = bloqueados.has(iso);
+        cells += `<span class="cal-c heat${lvl}${iso === hoy ? ' today' : ''}${cerrado ? ' cerrado' : ''}${iso === selFecha ? ' sel' : ''}"
+          data-f="${iso}" title="${n} entrega(s)${cerrado ? ' · agenda cerrada' : ''}">${d}${cerrado ? '<span class="cal-lock">🔒</span>' : ''}${n ? `<b>${n}</b>` : ''}</span>`;
+      }
+      const label = mCalRef.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' });
+      return `<div style="display:flex;justify-content:space-between;align-items:center;margin:6px 0;gap:8px">
+          <strong style="text-transform:capitalize">${label}</strong>
+          <div style="display:flex;gap:6px">
+            <button type="button" class="btn btn-ghost btn-sm" id="mCalPrev">←</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="mCalHoy">Hoy</button>
+            <button type="button" class="btn btn-ghost btn-sm" id="mCalNext">→</button>
+          </div></div>
+        <div class="carga-grid">${cells}</div>`;
+    };
+    const drawMCal = () => {
+      $('mCalWrap').innerHTML = mCalHTML();
+      $('mCalPrev').addEventListener('click', () => { mCalRef = new Date(mCalRef.getFullYear(), mCalRef.getMonth() - 1, 1); drawMCal(); });
+      $('mCalNext').addEventListener('click', () => { mCalRef = new Date(mCalRef.getFullYear(), mCalRef.getMonth() + 1, 1); drawMCal(); });
+      $('mCalHoy').addEventListener('click', () => { mCalRef = new Date(new Date().getFullYear(), new Date().getMonth(), 1); drawMCal(); });
+      $('mCalWrap').querySelectorAll('.cal-c[data-f]').forEach((c) => c.addEventListener('click', () => {
+        selFecha = c.dataset.f;
+        $('mFechaSel').textContent = fechaLarga(selFecha);
+        $('mFechaInfo').textContent = infoFecha(selFecha);
+        drawMCal();
+      }));
+    };
     const itemRows = (items && items.length) ? items.map((it) => `<tr>
       <td>${esc(it.nombre)}${it.porciones ? ` <span class="muted">(${it.porciones} porc.)</span>` : ''}
         ${it.opciones ? `<div class="field-note">${esc(it.opciones)}</div>` : ''}</td>
@@ -383,9 +435,9 @@
       <p class="field-note">${fmtDateTime(p.created_at)}</p>
       <div class="grid2" style="margin-top:14px">
         <div><label>Teléfono</label><div>${esc(p.telefono || '—')}${waLink}</div></div>
-        <div><label>Fecha de entrega (editable)</label>
-          <input type="date" id="mFecha" value="${p.fecha_entrega || ''}">
-          <div class="field-note" id="mFechaInfo">${infoFecha(p.fecha_entrega)}</div>
+        <div><label>Fecha de entrega</label>
+          <div id="mFechaSel" style="font-weight:600">${fechaLarga(selFecha)}</div>
+          <div class="field-note" id="mFechaInfo">${infoFecha(selFecha)}</div>
         </div>
         <div><label>Total</label><div>${money(p.total)}</div></div>
         <div><label>Abono (50%)</label><div>${money(p.abono)}</div></div>
@@ -395,6 +447,8 @@
         <button class="btn btn-sm ${p.abono_pagado ? 'btn-ghost' : ''}" id="mPago">${p.abono_pagado ? 'Quitar abono' : 'Marcar abono recibido'}</button>
         ${p.fecha_abono ? `<span class="field-note">desde ${fmtDateTime(p.fecha_abono)}</span>` : ''}
       </div>
+      <label style="margin-top:16px">Reagendar: elige el nuevo día en el calendario</label>
+      <div id="mCalWrap" class="cal-mini"></div>
       ${p.detalle ? `<label style="margin-top:14px">Detalle</label><div class="muted">${esc(p.detalle)}</div>` : ''}
       ${p.notas ? `<label style="margin-top:10px">Notas</label><div class="muted">${esc(p.notas)}</div>` : ''}
       <label style="margin-top:16px">Ítems</label>
@@ -407,9 +461,9 @@
         <button class="btn btn-ghost" data-close>Cerrar</button>
         <button class="btn" id="mSave">Guardar cambios</button>
       </div>`);
-    $('mFecha').addEventListener('input', () => { $('mFechaInfo').textContent = infoFecha($('mFecha').value); });
+    drawMCal();
     $('mSave').addEventListener('click', async () => {
-      const nuevaFecha = $('mFecha').value || null;
+      const nuevaFecha = selFecha || null;
       const reagendado = nuevaFecha !== (p.fecha_entrega || null);
       const { error } = await sb.from('pedidos').update({
         estado: $('mEstado').value, fecha_entrega: nuevaFecha
