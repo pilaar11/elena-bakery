@@ -24,7 +24,13 @@
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const nz = (v) => { const t = (v == null ? '' : String(v)).trim(); return t === '' ? null : t; };
   const intOr = (v, d = 0) => { const n = parseInt(v, 10); return Number.isFinite(n) ? n : d; };
-  const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-CL', { day: '2-digit', month: 'short' }) : '—';
+  const fmtDate = (d) => {
+    if (!d) return '—';
+    // Las fechas YYYY-MM-DD se interpretan como locales (new Date las trata
+    // como UTC y en Chile mostraría el día anterior).
+    const dt = /^\d{4}-\d{2}-\d{2}$/.test(d) ? isoToDate(d) : new Date(d);
+    return dt.toLocaleDateString('es-CL', { day: '2-digit', month: 'short' });
+  };
   const fmtDateTime = (d) => d ? new Date(d).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
 
   function toast(msg, isErr) {
@@ -345,7 +351,27 @@
   }
   async function openPedido(id) {
     const p = _pedidos.find((x) => x.id === id); if (!p) return;
-    const { data: items } = await sb.from('pedido_items').select('*').eq('pedido_id', id);
+    const [{ data: items }, diasRes] = await Promise.all([
+      sb.from('pedido_items').select('*').eq('pedido_id', id),
+      sb.from('dias_bloqueados').select('fecha')
+    ]);
+    const bloqueados = new Set(((diasRes && diasRes.data) || []).map((r) => r.fecha));
+    // Info de carga para la fecha elegida al reagendar
+    const infoFecha = (iso) => {
+      if (!iso) return '';
+      const n = _pedidos.filter((x) => x.id !== id && x.fecha_entrega === iso && x.estado !== 'cancelado').length;
+      const partes = [`${n} entrega(s) ese día`];
+      if (bloqueados.has(iso)) partes.push('🔒 agenda cerrada');
+      if (iso < new Date().toLocaleDateString('en-CA')) partes.push('⚠️ fecha pasada');
+      return partes.join(' · ');
+    };
+    // Link de WhatsApp para coordinar con el cliente
+    const dig = (p.telefono || '').replace(/\D/g, '');
+    const waNum = dig.length === 9 && dig.startsWith('9') ? '56' + dig : dig;
+    const waMsg = encodeURIComponent(`Hola! Te escribimos de Elena Bakery por tu pedido N° ${p.numero || p.id.slice(0, 8)}. Queremos coordinar contigo la fecha de entrega 🙂`);
+    const waLink = waNum.length >= 11
+      ? ` <a href="https://wa.me/${waNum}?text=${waMsg}" target="_blank" rel="noopener" style="font-size:.8rem">Coordinar por WhatsApp →</a>`
+      : '';
     const itemRows = (items && items.length) ? items.map((it) => `<tr>
       <td>${esc(it.nombre)}${it.porciones ? ` <span class="muted">(${it.porciones} porc.)</span>` : ''}
         ${it.opciones ? `<div class="field-note">${esc(it.opciones)}</div>` : ''}</td>
@@ -356,8 +382,11 @@
       <h3>Pedido ${esc(p.numero || p.id.slice(0, 8))}</h3>
       <p class="field-note">${fmtDateTime(p.created_at)}</p>
       <div class="grid2" style="margin-top:14px">
-        <div><label>Teléfono</label><div>${esc(p.telefono || '—')}</div></div>
-        <div><label>Entrega</label><div>${fmtDate(p.fecha_entrega)}</div></div>
+        <div><label>Teléfono</label><div>${esc(p.telefono || '—')}${waLink}</div></div>
+        <div><label>Fecha de entrega (editable)</label>
+          <input type="date" id="mFecha" value="${p.fecha_entrega || ''}">
+          <div class="field-note" id="mFechaInfo">${infoFecha(p.fecha_entrega)}</div>
+        </div>
         <div><label>Total</label><div>${money(p.total)}</div></div>
         <div><label>Abono (50%)</label><div>${money(p.abono)}</div></div>
       </div>
@@ -376,12 +405,19 @@
       <div class="actions">
         <button class="btn btn-danger" id="mDel">Eliminar</button>
         <button class="btn btn-ghost" data-close>Cerrar</button>
-        <button class="btn" id="mSave">Guardar estado</button>
+        <button class="btn" id="mSave">Guardar cambios</button>
       </div>`);
+    $('mFecha').addEventListener('input', () => { $('mFechaInfo').textContent = infoFecha($('mFecha').value); });
     $('mSave').addEventListener('click', async () => {
-      const { error } = await sb.from('pedidos').update({ estado: $('mEstado').value }).eq('id', id);
+      const nuevaFecha = $('mFecha').value || null;
+      const reagendado = nuevaFecha !== (p.fecha_entrega || null);
+      const { error } = await sb.from('pedidos').update({
+        estado: $('mEstado').value, fecha_entrega: nuevaFecha
+      }).eq('id', id);
       if (error) return toast('No se pudo guardar', true);
-      p.estado = $('mEstado').value; closeModal(); drawPedidos(); toast('Pedido actualizado');
+      p.estado = $('mEstado').value; p.fecha_entrega = nuevaFecha;
+      closeModal(); drawPedidos();
+      toast(reagendado ? 'Pedido reagendado para ' + (nuevaFecha ? fmtDate(nuevaFecha) : 'sin fecha') : 'Pedido actualizado');
     });
     $('mDel').addEventListener('click', async () => {
       if (!confirm('¿Eliminar este pedido? Esta acción no se puede deshacer.')) return;
